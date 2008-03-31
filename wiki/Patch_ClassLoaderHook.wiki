@@ -1,3 +1,5 @@
+[http://code.google.com/p/google-guice/issues/detail?id=94]
+
 ==Overview==
 
 The [http://peaberry.googlecode.com/svn/trunk/patch/ClassLoaderHook.txt ClassLoaderHook] patch adds the ability to intercept classloading inside Guice, specifically the classloading used when dealing with reflection and dynamic proxies.
