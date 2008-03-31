@@ -1,3 +1,4 @@
+#labels Phase-Design
 [http://code.google.com/p/google-guice/issues/detail?id=49]
 
 ==Overview==
