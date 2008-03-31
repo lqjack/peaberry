@@ -1,4 +1,6 @@
+#summary Design of the ClassLoaderHook patch for Guice (issue 94)
 #labels Phase-Design
+
 [http://code.google.com/p/google-guice/issues/detail?id=94]
 
 ==Overview==
