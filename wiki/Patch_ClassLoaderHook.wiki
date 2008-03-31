@@ -11,9 +11,7 @@ This patch is needed when using Guice inside containers that don't use the class
 There are three parts to this patch:
 
  # All code generation has been moved to a new class called *{{{GuiceCodeGen}}}*.
-
  # In the *{{{InjectorImpl}}}* it now removes the local context threadlocal instead of nulling the context. This change is required to fix a class unloading bug, where dangling local contexts would keep classes alive.
-
  # A new threadlocal has been added to store a classloader hook, which can intercept requests for classloaders during code generation. The default hook simply returns the client type's classloader.
 
 Non-delegating containers can then set per-thread classloader hooks to automatically bridge between the client's class space and the internal Guice classes needed during code generation.
