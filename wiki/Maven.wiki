@@ -27,3 +27,5 @@ To add the peaberry bundle to the classpath of your current project, use:
     </dependency>
   </dependencies>
 }}}
+
+An example Maven2 project can be found [http://peaberry.googlecode.com/files/peaberry-0.3-logdemo.zip here].
