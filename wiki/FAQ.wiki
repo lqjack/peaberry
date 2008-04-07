@@ -1,4 +1,5 @@
 #summary Frequently Asked Questions.
+#labels Phase-Support
 =Frequently Asked Questions=
 
 _no questions so far_
