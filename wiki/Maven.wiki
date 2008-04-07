@@ -22,7 +22,7 @@ To add the peaberry bundle to the classpath of your current project, use:
     <dependency>
       <groupId>org.ops4j</groupId>
       <artifactId>peaberry</artifactId>
-      <version>0.2</version>
+      <version>0.3</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
