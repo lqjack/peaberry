@@ -56,7 +56,7 @@ Each time the injector reports a missing dependency, the handler will check for 
 
 ==Binding Factory lifetime==
 
-Binding factories are only used during *creation* of the injector. This means that they will not provide bindings for types that are only discovered when the injector is used, for example via {{{injectMembers}}}. While this does limit the possibilities of binding factories, it does avoid potential problems that could occur if bindings were introduced after the injector was created.
+Binding factories are only used during *creation* of the injector. This means that they will not provide bindings for types that are only discovered when the injector is used, for example via {{{injectMembers}}}. While this does limit the possibilities of binding factories, it also avoids potential problems that could occur if bindings were introduced after the injector was created.
 
 ==Alternative Designs==
 
