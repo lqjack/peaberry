@@ -1,4 +1,4 @@
-#summary using the peaberry bundle with a Maven project
+#summary using the peaberry bundle with a Maven2 project
 #labels Phase-Deploy
 
 Early releases of peaberry can be found on the OPS4J Maven repository:
