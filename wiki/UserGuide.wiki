@@ -1,1 +1,2 @@
 #summary Guide for using the peaberry bundle with OSGi.
+#labels Phase-Deploy
