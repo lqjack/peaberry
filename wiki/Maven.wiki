@@ -1,0 +1,29 @@
+#summary using the peaberry bundle with a Maven project
+#labels Phase-Deploy
+
+Early releases of peaberry can be found on the OPS4J Maven repository:
+
+{{{
+  <repositories>
+    <repository>
+      <id>ops4j.releases</id>
+      <url>http://repository.ops4j.org/maven2/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+}}}
+
+To add the peaberry bundle to the classpath of your current project, use:
+
+{{{
+  <dependencies>
+    <dependency>
+      <groupId>org.ops4j</groupId>
+      <artifactId>peaberry</artifactId>
+      <version>0.2</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+}}}
