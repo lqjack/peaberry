@@ -17,14 +17,13 @@ There are three parts to this patch:
 
  # All code generation has been moved to a new class called *{{{GuiceCodeGen}}}*.
  # In the *{{{InjectorImpl}}}* it now removes the local context threadlocal instead of nulling the context. This change is required to fix a class unloading bug, where dangling local contexts would keep classes alive.
- # A new threadlocal has been added to store a classloader hook, which can intercept requests for classloaders during code generation. The default hook simply returns the client type's classloader.
+ # ~~A new threadlocal has been added to store a classloader hook, which can intercept requests for classloaders during code generation. The default hook simply returns the client type's classloader.~~
+ # A default classloader hook is provided that supports proxy unloading and non-delegating classloaders (like in OSGi)
 
-Non-delegating containers can then set per-thread classloader hooks to automatically bridge between the client's class space and the internal Guice classes needed during code generation.
+~~Non-delegating containers can then set per-thread classloader hooks to automatically bridge between the client's class space and the internal Guice classes needed during code generation.~~
 
 ==Alternative Designs==
 
 I did consider passing the classloader hook into the injector, but the amount of interfaces that needed to be changed made this a really expensive change.
 
 Using the Thread *{{{ContextClassLoader}}}* (TCCL) was another option, which would avoid the need for a new threadlocal. However, the danger is that this could easily be reset by client code, and it lacks a level of detail provided by the classloader hook.
-
-In the end using a threadlocal turned out to be the more elegant option _(imho!)_
