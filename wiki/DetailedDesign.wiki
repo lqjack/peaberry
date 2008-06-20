@@ -1,2 +1,2 @@
 #labels Phase-Design,Featured
-_Note: the old 0.4 design is captured [OldDesign here]_
+Various musings on design, feel free to comment (earlier designs are captured [OldDesign here]_)
