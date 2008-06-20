@@ -1,2 +1,32 @@
+#summary Various musings on design, feel free to comment (earlier designs are captured [OldDesign here]_)
 #labels Phase-Design,Featured
-Various musings on design, feel free to comment (earlier designs are captured [OldDesign here]_)
+
+==Main Concepts==
+
+===Service Registry===
+
+The *peaberry* project is all about injecting dynamic services using Guice, so the first step is to design an API that will retrieve such services. _(note that we won't be using Guice to inject the service itself, but rather Guice will inject a proxy that uses the lookup API to delegate calls to actual services.)_
+
+So here's an attempt at a very simple service lookup API:
+
+{{{
+public interface ServiceRegistry {
+
+  /**
+   * Lookup service instances from registry, constrained by LDAP filter.
+   * 
+   * @param type expected service type
+   * @param filter RFC-1960 (LDAP) filter
+   * @return sequence of service instances
+   */
+  <T> Iterator<T> lookup(Class<? extends T> type, String filter);
+}
+}}}
+
+This design was influenced by OSGi, which uses service types and LDAP filters to find matching services. From my experience this works very well, and I believe it's flexible enough to support other types of service registry. _(the LDAP filter should provide a standard mechanism for supporting additional constraints.)_
+
+The registry always returns an iterator for a given query - this means we can use the same API call for providing single services, as well as sequences of services. Registry implementations can then provide lazy iterators, only expanding the search as and when the service iterator is called.
+
+===Service Injection===
+
+===Service Registration===
