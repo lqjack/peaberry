@@ -1,5 +1,6 @@
-#summary Various musings on design, feel free to comment (earlier designs are captured [OldDesign here]_)
+#summary Various musings on design, feel free to comment
 #labels Phase-Design,Featured
+_(earlier designs are captured [OldDesign here])_
 
 ==Main Concepts==
 
