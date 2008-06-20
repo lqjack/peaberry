@@ -1,5 +1,6 @@
-#summary Various musings on design, feel free to comment
+#summary This document covers the design for peaberry 0.4 and earlier
 #labels Phase-Design
+=peaberry 0.4=
 
 ==Main Concepts==
 
