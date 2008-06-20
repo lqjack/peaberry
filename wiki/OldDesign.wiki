@@ -1,5 +1,5 @@
 #summary Various musings on design, feel free to comment
-#labels Featured,Phase-Design
+#labels Phase-Design
 
 ==Main Concepts==
 
