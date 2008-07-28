@@ -8,7 +8,7 @@ _(earlier designs are captured [OldDesign here])_
 
 The *peaberry* project is all about injecting dynamic services using Guice, so the first step is to design an API that will retrieve such services. _(note that we won't be using Guice to inject the service itself, but rather Guice will inject a proxy that uses the lookup API to delegate calls to actual services.)_
 
-So here's an attempt at a very simple service lookup API:
+Here's an attempt at a simple service lookup API:
 
 {{{
 public interface ServiceRegistry {
@@ -27,8 +27,54 @@ public interface ServiceRegistry {
 
 This design was influenced by OSGi, which uses service types and LDAP filters to find matching services. From my experience this works very well, and I believe it's flexible enough to support other types of service registry. _(the LDAP filter should provide a standard mechanism for supporting additional constraints.)_
 
-The registry returns an iterable sequence of imported services for a given query - this means we can use the same API call for providing single services, as well as sequences of services. Registry implementations can then provide lazy sequences, only expanding the search as and when the service iterator is called.
+The registry returns a sequence of imported services for a given query - this means we can use the same API call for providing single services, as well as sequences of services. Registry implementations can then provide lazy sequences, only expanding the search as and when the service iterator is called.
+
+But what exactly is an _imported_ service, why not return an {{{Iterable<T>}}}? Well, if we just return direct instances then the registry won't be able to know when we're actively using them (unless the registry provides its own proxies of {{{T}}} to track method invocations, which could mean many different implementations of the same proxy algorithm).
+
+So instead we define an interface that allows us to record our use of the service:
+
+{{{
+public interface Import<T> {
+
+  /**
+   * Start using the imported service instance.
+   *
+   * @return service instance
+   *
+   * @throws ServiceUnavailableException
+   */
+  T get();
+
+  /**
+   * Stop using the imported service instance.
+   */
+  void unget();
+}
+}}}
+
+which is then proxied by the peaberry codebase to look like a {{{T}}}.
+
+===Proxy Generation===
+
+The latest codebase uses [http://asm.objectweb.org ASM] to generate optimized proxies for imported services. The approach is something like this:
+
+{{{
+try {
+  T instance = handle.get();
+  return INVOKE(instance, method, arguments);
+} finally {
+  try {
+    handle.unget();
+  } catch (Exception e) {}
+}
+}}}
 
 ===Service Injection===
 
+===Service Decoration===
+
+===Direct Services===
+
 ===Service Registration===
+
+===Scoped Services===
