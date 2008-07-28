@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<project name="doc">
+
+  <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask"
+      classpath="${antlib}/jaxen.jar;${antlib}/pmd.jar;${asm.jar}"/>
+
+  <target name="pmd">
+    <mkdir dir="${doc}/coverage"/>
+    <pmd rulesetfiles="pmd.xml" shortFilenames="true">
+      <formatter type="html" toFile="${doc}/coverage/pmd.html" linkPrefix="" linePrefix="src-"/>
+      <fileset dir="${src}" includes="**/*.java" excludes="**/OSGiServiceRegistry.java"/>
+      <auxclasspath>
+        <pathelement location="${build}/classes"/>
+      </auxclasspath>
+    </pmd>
+  </target>
+
+  <target name="doc">
+    <mkdir dir="${doc}/javadoc"/>
+    <javadoc destdir="${doc}/javadoc" classpath="${build.cp}"
+        use="true" author="false" windowtitle="${title}">
+      <packageset dir="${src}" excludes="**/internal/**"/>
+      <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
+      <link href="http://google-guice.googlecode.com/svn/trunk/javadoc/"/>
+      <link href="http://aopalliance.sourceforge.net/doc/"/>
+      <link href="http://www2.osgi.org/javadoc/r4/"/>
+    </javadoc>
+  </target>
+
+</project>

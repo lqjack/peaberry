@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<project name="test">
+
+  <taskdef resource="testngtasks" classpath="${testng.jar}"/>
+
+  <target name="test.peaberry" depends="testcases">
+    <delete dir="${build}/test/felix"/>
+
+    <testng outputDir="${doc}/testNG" suiteRunnerClass="org.ops4j.peaberry.test.OSGiTestNG">
+
+      <classfileset dir="${build}/test-classes" includes="**/*Tests.class"/>
+
+      <classpath>
+        <pathelement location="${felix.jar}"/>
+        <pathelement location="${peaberry.jar}"/>
+        <pathelement location="${build}/test-classes"/>
+        <pathelement location="${clover.jar}"/>
+      </classpath>
+
+      <sysproperty key="felix.config.properties" value="file:test/felix.properties"/>
+
+      <sysproperty key="build" value="${build}"/>
+
+      <sysproperty key="cmpn.jar" value="${cmpn.jar}"/>
+      <sysproperty key="aop.jar" value="${aop.jar}"/>
+      <sysproperty key="guice.jar" value="${guice.jar}"/>
+      <sysproperty key="peaberry.jar" value="${peaberry.jar}"/>
+      <sysproperty key="testcases.jar" value="${testcases.jar}"/>
+
+      <sysproperty key="guice.custom.loader" value="true"/>
+
+    </testng>
+  </target>
+
+</project>

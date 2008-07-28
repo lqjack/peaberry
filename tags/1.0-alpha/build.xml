@@ -1,0 +1,82 @@
+<project name="peaberry" default="dist">
+
+  <property file="build.properties"/>
+
+  <import file="scm.xml"/>
+  <import file="clover.xml"/>
+  <import file="bnd.xml"/>
+  <import file="test.xml"/>
+  <import file="doc.xml"/>
+
+  <target name="guice" depends="scm">
+    <ant dir="${guice}" target="jar">
+      <property name="module" value="com.google.inject"/>
+      <property name="version" value="2.0-SNAPSHOT"/>
+    </ant>
+  </target>
+
+  <target name="test.guice" depends="guice">
+    <echo message="Skipping Guice unit tests"/>
+    <mkdir dir="${guice}/build/test"/>
+<!--
+    <ant dir="${guice}" target="test.dist"/>
+-->
+  </target>
+
+  <target name="compile" depends="guice">
+    <mkdir dir="${build}/classes"/>
+    <javac source="1.5" target="1.5" debug="true"
+        srcdir="${src}" destdir="${build}/classes" classpath="${build.cp}">
+      <compilerarg value="-Xlint"/>
+    </javac>
+  </target>
+
+  <target name="test.compile" depends="compile">
+    <mkdir dir="${build}/test-classes"/>
+    <javac source="1.5" target="1.5" debug="true"
+        srcdir="${test}" destdir="${build}/test-classes" classpath="${test.cp}">
+      <compilerarg value="-Xlint"/>
+    </javac>
+  </target>
+
+  <target name="clean.guice">
+    <ant dir="${guice}" target="clean"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="${build}"/>
+  </target>
+
+  <target name="clean.all" depends="clean.guice,clean"/>
+
+  <target name="wipe" depends="clean">
+    <delete dir="${guice}"/>
+  </target>
+
+  <target name="dist" depends="peaberry,doc">
+    <jar destfile="${build}/dist/peaberry-${version}-javadoc.jar" basedir="${doc}/javadoc"/>
+    <jar destfile="${build}/dist/peaberry-${version}-sources.jar" basedir="${src}">
+      <metainf dir="." includes="NOTICE,LICENSE"/>
+    </jar>
+    <copy todir="${build}/dist">
+      <fileset dir="." includes="NOTICE,LICENSE*,README.TXT,pom.xml"/>
+      <compositemapper>
+        <identitymapper/>
+        <globmapper from="pom.xml" to="peaberry-${version}.pom"/>
+      </compositemapper>
+      <filterset>
+        <filter token="VERSION" value="${version}"/>
+      </filterset>
+    </copy>
+    <checksum format="MD5SUM" algorithm="md5">
+      <fileset dir="${build}/dist" includes="*.jar,*.pom"/>
+    </checksum>
+    <zip destfile="${build}/peaberry-${version}.zip" basedir="${build}/dist"/>
+    <checksum format="MD5SUM" algorithm="md5" file="${build}/peaberry-${version}.zip"/>
+  </target>
+
+  <target name="test.dist" depends="peaberry,test.peaberry"/>
+
+  <target name="reports" depends="guice,clean,with.clover,peaberry,test.peaberry,clover.report,pmd"/>
+
+</project>

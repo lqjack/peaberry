@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<project name="bnd">
+
+  <taskdef resource="aQute/bnd/ant/taskdef.properties" classpath="${antlib}/bnd.jar"/>
+
+  <target name="peaberry" depends="compile,aopalliance">
+    <copy file="${guice.jar}" todir="${build}/dist"/>
+    <bnd files="peaberry.bnd" classpath="${build}/classes"/>
+  </target>
+
+  <target name="testcases" depends="test.compile">
+    <mkdir dir="${build}/test"/>
+    <bnd files="testcases.bnd" classpath="${build}/test-classes"/>
+  </target>
+
+  <target name="aopalliance">
+    <mkdir dir="${build}/dist"/>
+    <bnd files="aopalliance.bnd" classpath="${guice}/lib/aopalliance.jar"/>
+  </target>
+
+</project>

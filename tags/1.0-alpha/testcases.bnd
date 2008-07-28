@@ -1,0 +1,18 @@
+
+Import-Package:\
+ !org.apache.felix.*,*
+
+Private-Package:\
+ org.ops4j.peaberry.test.*
+
+-nouses: true
+
+-removeheaders:\
+ Bnd-LastModified,\
+ Include-Resource,\
+ Private-Package,\
+ Tool
+
+-output:\
+ ${testcases.jar}
+
