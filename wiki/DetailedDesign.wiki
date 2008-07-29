@@ -73,7 +73,7 @@ NOTE: if you're making repeated calls to the same service object and want to avo
 
 ===Service Injection===
 
-So how do we go from a service lookup which gives us {{{Iterable<Import<T>>}}} to something we can inject into a {{{T}}} or {{{Iterable<T>}}} member? Well, *peaberry* creates {{{Provider<T>}}} instances that do the following:
+So how do we go from a service lookup which gives us {{{Iterable<Import<T>>}}} to something we can inject into a {{{T}}} or {{{Iterable<T>}}} member? Well, *peaberry* can create {{{Provider<T>}}} or {{{Provider<Iterable<T>>}}} instances that do the following:
 
  # query the appropriate registry
  # apply decoration to each import
@@ -153,8 +153,102 @@ NOTE: the first few threads may not find a valid import handle, if no service is
 
 ===Service Decoration===
 
+Using import handles brings another benefit - you can easily decorate services as they're retrieved from the registry, by wrapping your own import handle around the original. In order to do this, you need to provide an implementation of the following interface:
+
+{{{
+public interface ImportDecorator<S> {
+
+  /**
+   * Decorate the given imported service.
+   * 
+   * @param handle service handle
+   * @return decorated service handle
+   */
+  <T extends S> Import<T> decorate(Import<T> handle);
+}
+}}}
+
+and configure the service provider to use it by calling the {{{decoratedBy()}}} method. For example:
+
+{{{
+public class FooDecorator implements ImportDecorator<Foo> {
+
+  public <T extends Foo> Import<T> decorate(final Import<T> handle) {
+    return new Import<T>() {
+      public T get() {
+        return new MyFoo(handle.get());
+      }
+
+      public void unget() {
+        handle.unget();
+      }
+    };
+  }
+}
+}}}
+
+You could also write a decorator that caches the initial service instance, and uses it for subsequent calls until the time since the last call exceeds a set limit. This would improve the performance for heavily used services, because there's no point in querying every millisecond. _actually I think I'll provide an example decorator that does this in the util package_
+
+NOTE: {{{decoratedBy}}} takes a {{{Key}}}, which is used to retrieve the implementation at injection time.
+
 ===Direct Services===
+
+Another new feature I added recently is the ability to inject the _actual_ service instance rather than a proxy, enabled by the {{{direct()}}} method. So there's no overhead in calls to the service, but it does mean the service is *static* and won't change over time.
+
+This might be useful to people who want to use OSGi (or a similar framework) to assemble or wire their application, but don't need the full dynamics of the service registry. Direct services can be decorated, just like dynamic services - but the decoration is only applied once at injection time.
+
+NOTE: you could always use {{{Injector.getInstance(...)}}} or {{{Injector.injectMembers(...)}}} to programmatically update direct services, while keeping the performance benefits, because the registry is still queried on each injection request.
 
 ===Service Registration===
 
-===Scoped Services===
+OK, so we can inject services - but how about getting our own implementations into the service registry? Here's an attempt at what I call a "service scope", which is basically a dynamic collection of services:
+
+{{{
+public interface ServiceScope {
+
+  /**
+   * Export the given service to this scope with the associated attributes.
+   * 
+   * @param service service instance
+   * @param attributes service attributes
+   * 
+   * @return exported service handle, null if the scope is not interested
+   */
+  <S, T extends S> Export<S> export(T service, Map<String, ?> attributes);
+}
+}}}
+
+This interface is separate from {{{ServiceRegistry}}} because not all collections of services may be query-able. However a registry is a scope, so it should extend it:
+
+{{{
+public interface ServiceRegistry extends ServiceScope //...
+}}}
+
+When you export a service implementation to a scope, you get back an export handle:
+
+{{{
+public interface Export<T> {
+
+  /**
+   * Modify the attributes associated with the exported service instance.
+   * 
+   * @param attributes service attributes
+   */
+  void modify(Map<String, ?> attributes);
+
+  /**
+   * Remove the exported service from the containing {@code ServiceScope}.
+   */
+  void remove();
+}
+}}}
+
+It would be also useful to get the actual service implementation from the export handle, so why not re-use the import interface:
+
+{{{
+public interface Export<T> extends Import<T> //...
+}}}
+
+Which I think makes sense, if you're used to the semantics of OSGi.
+
+Following the same approach as before, *peaberry* can create {{{Provider<Export<T>>}}} instances, customized using a fluent API. The service implementation is specified by passing in the appropriate {{{Key}}} which is looked up via the injector at injection time, and exported to the appropriate registry.
