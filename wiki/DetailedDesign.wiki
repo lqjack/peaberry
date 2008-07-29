@@ -251,4 +251,4 @@ public interface Export<T> extends Import<T> //...
 
 Which I think makes sense, if you're used to the semantics of OSGi.
 
-Following the same approach as before, *peaberry* can create {{{Provider<Export<T>>}}} instances, customized using a fluent API. The service implementation is specified by passing in the appropriate {{{Key}}} which is looked up via the injector at injection time, and exported to the appropriate registry.
+Following the same approach as before, *peaberry* can create {{{Provider<Export<T>>}}} instances, customized using a fluent API. The service implementation is specified by passing in the appropriate {{{Key}}} which is looked up via the injector at injection time, and exported to the appropriate registry. This means you can also programmatically export services at any time, by using {{{Injector.getInstance(...)}}} for the relevant exported handle, or by calling the provider directly.
