@@ -3,15 +3,24 @@
 
 =Eclipse/PDE Example - Text Scrambling Service=
 
- # download and unzip [test]
+ # download and unzip the [http://peaberry.googlecode.com/files/PeaberryExample.zip example]
  # import the contents into Eclipse as existing projects
  # open *peaberry.platform* and set it as the target platform:
    [http://lh3.ggpht.com/mcculls/SI9u873Yg9I/AAAAAAAAA_o/CEl3JijDgtc/s800/1_load_target_platform.png http://lh3.ggpht.com/mcculls/SI9u873Yg9I/AAAAAAAAA_o/CEl3JijDgtc/s400/1_load_target_platform.png]
- # right-click on *peaberry.launch* and select Run As... peaberry:
+ # right-click on *peaberry.launch* and select Run As... -> peaberry:
    [http://lh4.ggpht.com/mcculls/SI9u881dwpI/AAAAAAAAA_w/YYGeevhRI88/s800/2_run_test_launcher.png http://lh4.ggpht.com/mcculls/SI9u881dwpI/AAAAAAAAA_w/YYGeevhRI88/s400/2_run_test_launcher.png]
  # you should see both bundles start and produce scrambled output:
    [http://lh4.ggpht.com/mcculls/SI9u9KSo7PI/AAAAAAAAA_4/HpR7L8FYtYg/s800/3_see_test_run.png http://lh4.ggpht.com/mcculls/SI9u9KSo7PI/AAAAAAAAA_4/HpR7L8FYtYg/s400/3_see_test_run.png]
  # try stopping and starting the service bundle using the console
+
+===Useful Console Commands===
+
+{{{
+ss       -  list all bundles
+stop n   -  stop bundle #n
+start n  -  start bundle #n
+diag n   -  diagnose bundle
+}}}
 
 =Fluent API Examples=
 
