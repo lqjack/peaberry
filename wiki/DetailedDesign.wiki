@@ -31,7 +31,7 @@ The registry returns a sequence of imported services for a given query - this me
 
 But what exactly is an _imported_ service, why not return an {{{Iterable<T>}}}? Well, if we just return direct instances then the registry won't be able to know when we're actively using them (unless the registry provides its own proxies of {{{T}}} to track method invocations, which could mean many different implementations of the same proxy algorithm).
 
-So instead we define an interface that allows us to record our use of the service:
+So instead we define an interface that lets us record our use of the service:
 
 {{{
 public interface Import<T> {
@@ -56,7 +56,7 @@ which is then proxied by the peaberry codebase to look like a {{{T}}}.
 
 ===Proxy Generation===
 
-The latest codebase uses [http://asm.objectweb.org ASM] to generate optimized proxies for imported services. The approach is something like this:
+The latest codebase uses [http://asm.objectweb.org ASM] to generate optimized proxies for imported services. The approach goes something like this:
 
 {{{
 try {
@@ -69,7 +69,87 @@ try {
 }
 }}}
 
+NOTE: if you're making repeated calls to the same service object and want to avoid the overhead of {{{get()}}} and {{{unget()}}} on every call then you can use _decoration_ to reduce this. Service decoration is described [DetailedDesign#Service_Decoration here].
+
 ===Service Injection===
+
+So how do we go from a service lookup which gives us {{{Iterable<Import<T>>}}} to something we can inject into a {{{T}}} or {{{Iterable<T>}}} member? Well, *peaberry* creates {{{Provider<T>}}} instances that do the following:
+
+ # query the appropriate registry
+ # apply decoration to each import
+ # create a proxy for each import
+
+We use provider instances because we need to customize the provider for each request. They're built using a so-called "fluent" API that lets you customize each stage, and choose whether to inject multiple or single services.
+
+Injecting multiple services like {{{Iterable<T>}}} is straightforward, and can be done lazily by unrolling the service iterator as the client unrolls the injected iterator.
+
+Injecting a single service {{{T}}} is a actually bit harder than you might think. We can't just take the first imported service and proxy that, because the first service in the list will change over time. We need to somehow create an {{{Import<T>}}} that always checks the first service in the list and returns that:
+
+{{{
+Import<T> lookup = new Import<T>() {
+  public T get() {
+    return handles.iterator().next().get();
+  }
+
+  public void unget() {
+    handles.iterator().next().unget();
+  }
+};
+}}}
+
+However, there's a problem with this code - the import handle used to {{{get()}}} the service might not be the same one used to {{{unget()}}} it. We need to record the handle used for each call, which is tricky because we can't save it in the stack. One option would be to use a {{{ThreadLocal}}} to maintain our own context stack, but this causes additional overhead to each call.
+
+After much prototyping, I finally found a solution that works without a {{{ThreadLocal}}}:
+
+{{{
+/*
+ * Provide an import handle that dynamically delegates to the first service,
+ * but also tracks its use (even across multiple threads) so that unget() is
+ * always called on the same handle as get() was originally.
+ * 
+ * The solution below will use the same handle until no threads are actively
+ * using the injected instance. This might keep a service in use for longer
+ * than expected when there is heavy contention, but it doesn't require any
+ * use of thread locals or additional context stacks.
+ */
+Import<T> lookup = new Import<T>() {
+  private long count = 0L;
+  private Import<T> handle;
+  private T instance;
+
+  public synchronized T get() {
+    count++;
+    if (null == handle) {
+      // first valid handle may appear at any time
+      handle = handles.iterator().next();
+      instance = handle.get(); // only called once
+    }
+    if (null == instance) {
+      // have handle, but service wasn't available
+      throw new ServiceUnavailableException();
+    }
+    return instance;
+  }
+
+  public synchronized void unget() {
+    if (--count == 0) {
+      try {
+        // last thread out
+        if (null != handle) {
+          handle.unget();
+        }
+      } finally {
+        instance = null;
+        handle = null;
+      }
+    }
+  }
+};
+}}}
+
+it basically guarantees that overlapping threads using the same injected instance will use the same service instance (as soon as one becomes available). The import handle is only "ungot" when the last thread exits. This has the happy side-effect of improving service consistency.
+
+NOTE: the first few threads may not find a valid import handle, if no service is available at the time. That's why we let any thread try and retrieve the handle. One gotcha is that calls to {{{get()}}} and {{{unget()}}} must be balanced to maintain the count, which is why the proxy uses a finally block to ensure {{{unget()}}} is called.
 
 ===Service Decoration===
 
