@@ -14,18 +14,18 @@ Here's an attempt at a simple service lookup API:
 public interface ServiceRegistry {
 
   /**
-   * Lookup services from the registry, constrained by the given LDAP filter.
-   *
+   * Lookup services from the registry, constrained by the given filter.
+   * 
    * @param clazz expected service interface
-   * @param filter RFC-1960 LDAP filter
-   *
+   * @param filter service attribute filter
+   * 
    * @return ordered sequence of imported services, recommended service first
    */
-  <T> Iterable<Import<T>> lookup(Class<? extends T> clazz, String filter);
+  <T> Iterable<Import<T>> lookup(Class<? extends T> clazz, AttributeFilter filter);
 }
 }}}
 
-This design was influenced by OSGi, which uses service types and LDAP filters to find matching services. From my experience this works very well, and I believe it's flexible enough to support other types of service registry. _(the LDAP filter should provide a standard mechanism for supporting additional constraints.)_
+This design was influenced by OSGi, which uses service types and attribute filters to find matching services. From my experience this works very well, and I believe it's flexible enough to support other types of service registry.
 
 The registry returns a sequence of imported services for a given query - this means we can use the same API call for providing single services, as well as sequences of services. Registry implementations can then provide lazy sequences, only expanding the search as and when the service iterator is called.
 
