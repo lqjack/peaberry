@@ -53,10 +53,10 @@ Exporting an implementation as a dictionary service:
  bind(export(DictionaryService.class)).to(registration(dictionaryImplKey).export());
 }}}
 
-Applying an LDAP filter to find a specific service:
+Applying a custom filter to find a specific service:
 
 {{{
- service(DictionaryService.class).filter("Language=French").single();
+ service(DictionaryService.class).filter(ldap("(Language=French)")).single();
 }}}
 
 Applying custom attributes to an exported service:
