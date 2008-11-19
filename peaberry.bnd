@@ -14,7 +14,13 @@ Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Include-Resource:\
  META-INF/NOTICE=NOTICE,\
  META-INF/LICENSE=LICENSE,\
- META-INF/LICENSE.asm=LICENSE.asm
+ META-INF/LICENSE.asm=LICENSE.asm,\
+ OSGI-OPT/src=src,\
+ @${asm.jar}!/org/objectweb/asm/*,\
+ @${collect.jar}!/com/google/common/base/*Reference*,\
+ @${collect.jar}!/com/google/common/base/Preconditions*,\
+ @${collect.jar}!/com/google/common/collect/ReferenceMap*,\
+ @${felix.jar}!/org/apache/felix/framework/util/ldap/*
 
 osgi.imports:\
  org.osgi.framework;version="[1.3,2)"

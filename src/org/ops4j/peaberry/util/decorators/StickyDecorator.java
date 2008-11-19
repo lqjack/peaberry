@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.ops4j.peaberry.Import;
-import org.ops4j.peaberry.ServiceException;
 import org.ops4j.peaberry.ServiceUnavailableException;
 import org.ops4j.peaberry.builders.ImportDecorator;
 
@@ -42,49 +41,40 @@ public final class StickyDecorator<S>
     this.resetTask = resetTask;
   }
 
-  private final class StickyImport<T>
-      implements Import<T> {
-
-    private final Import<T> handle;
-    private T instance;
-
-    StickyImport(final Import<T> handle) {
-      this.handle = handle;
-    }
-
-    public synchronized T get() {
-
-      if (null != resetTask && null != instance && null == handle.attributes()) {
-        try {
-          if (resetTask.call()) {
-            instance = null;
-            handle.unget();
-          }
-        } catch (final Exception e) {
-          throw new ServiceException("Exception in resetTask", e);
-        }
-      }
-
-      if (null == instance) {
-        try {
-          instance = handle.get();
-        } catch (final RuntimeException re) {
-          handle.unget();
-          throw re;
-        }
-      }
-
-      return instance;
-    }
-
-    public synchronized Map<String, ?> attributes() {
-      return instance == null ? null : handle.attributes();
-    }
-
-    public void unget() {/* nothing to do */}
-  }
-
   public <T extends S> Import<T> decorate(final Import<T> handle) {
-    return new StickyImport<T>(handle);
+    return new Import<T>() {
+
+      // sticky service
+      private T instance;
+
+      public synchronized T get() {
+
+        if (null != resetTask && null != instance && null == handle.attributes()) {
+          try {
+            if (resetTask.call()) {
+              instance = null;
+              handle.unget();
+            }
+          } catch (final Exception e) {}
+        }
+
+        if (null == instance) {
+          try {
+            instance = handle.get();
+          } catch (final RuntimeException re) {
+            handle.unget();
+            throw re;
+          }
+        }
+
+        return instance;
+      }
+
+      public synchronized Map<String, ?> attributes() {
+        return instance != null ? handle.attributes() : null;
+      }
+
+      public void unget() {/* nothing to do */}
+    };
   }
 }

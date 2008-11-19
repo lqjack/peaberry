@@ -22,7 +22,6 @@ import static org.osgi.framework.Constants.SERVICE_RANKING;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.ops4j.peaberry.AttributeFilter;
 import org.ops4j.peaberry.Import;
 import org.ops4j.peaberry.ServiceUnavailableException;
 import org.osgi.framework.BundleContext;
@@ -47,9 +46,9 @@ final class OSGiServiceImport
 
   private final Map<String, ?> attributes;
 
-  private Object instance;
-
+  private volatile Object instance;
   private volatile boolean calledGet;
+
   private final AtomicInteger count;
 
   public OSGiServiceImport(final BundleContext bundleContext, final ServiceReference ref) {
@@ -81,69 +80,49 @@ final class OSGiServiceImport
     return oldRank != rank;
   }
 
-  public boolean matches(final AttributeFilter filter) {
-    return filter.matches(attributes);
+  public Map<String, ?> getAttributes() {
+    return attributes;
   }
 
   public Object get() {
     count.getAndIncrement();
-    if (!calledGet) {
+    if (false == calledGet) {
       synchronized (this) {
-        if (!calledGet) {
+        if (false == calledGet) {
+          calledGet = true;
           try {
             instance = bundleContext.getService(ref);
           } catch (final RuntimeException re) {
             throw new ServiceUnavailableException(re);
-          } finally {
-            calledGet = true;
           }
         }
       }
     }
-    // cache locally then check
-    final Object svc = instance;
-    if (null == svc) {
+    final Object obj = instance;
+    if (null == obj) {
       throw NO_SERVICE;
     }
-    return svc;
+    return obj;
   }
 
   public Map<String, ?> attributes() {
-    return calledGet && instance != null ? attributes : null;
+    return instance != null ? getAttributes() : null;
   }
 
   public void unget() {
     count.decrementAndGet();
   }
 
-  public void flush(final boolean serviceUnregistered) {
+  public synchronized void flush(final boolean serviceUnregistered) {
     if (serviceUnregistered) {
-      // no need to unget, as service is gone
+      instance = null; // no need to unget
+    } else if (calledGet && 0 == count.get()) {
+      calledGet = false;
       instance = null;
-      calledGet = true; // flush
-      return;
-    }
-
-    // check no-one is using the service
-    if (calledGet && 0 == count.get()) {
-
-      synchronized (this) {
-        if (calledGet) {
-          // attempt to block other threads calling get()
-          calledGet = false;
-
-          if (count.get() > 0) {
-            // another thread snuck in, so roll back...
-            calledGet = true;
-          } else {
-            instance = null;
-            try {
-              // cached result not being used
-              bundleContext.ungetService(ref);
-            } catch (final IllegalStateException e) {/* already gone */} // NOPMD
-          }
-        }
-      }
+      try {
+        // cached result not being used
+        bundleContext.ungetService(ref);
+      } catch (final IllegalStateException e) {/* already gone */} // NOPMD
     }
   }
 
@@ -158,7 +137,7 @@ final class OSGiServiceImport
 
   @Override
   public int hashCode() {
-    return (int) (id ^ (id >>> 32));
+    return (int) (id ^ id >>> 32);
   }
 
   public int compareTo(final OSGiServiceImport rhs) {

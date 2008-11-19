@@ -19,6 +19,7 @@ package org.ops4j.peaberry.osgi;
 import static com.google.inject.name.Names.named;
 import static org.ops4j.peaberry.Peaberry.osgiModule;
 import static org.ops4j.peaberry.Peaberry.service;
+import static org.ops4j.peaberry.util.TypeLiterals.iterable;
 import static org.osgi.framework.Bundle.ACTIVE;
 import static org.osgi.framework.Bundle.STARTING;
 
@@ -31,8 +32,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 
 /**
@@ -65,21 +64,20 @@ public final class Activator
 
       this.registries = registries;
       this.flushInterval = flushInterval;
-
-      bundle = ctx.getBundle();
+      this.bundle = ctx.getBundle();
     }
 
     public void run() {
       do {
         try {
           Thread.sleep(flushInterval);
-        } catch (final InterruptedException e) {/* wake-up */} // NOPMD
+        } catch (final InterruptedException e) {}
 
         // flush out any unused cached service instances...
         for (final CachingServiceRegistry i : registries) {
           try {
             i.flush();
-          } catch (final ServiceUnavailableException e) {/* already gone */} // NOPMD
+          } catch (final ServiceUnavailableException e) {}
         }
       } while ((bundle.getState() & (STARTING | ACTIVE)) != 0);
     }
@@ -98,7 +96,8 @@ public final class Activator
             osgiProperty(FLUSH_INTERVAL_KEY, "8000"));
 
         // eat our own cat-food: lookup registered caching registries from OSGi
-        bind(new TypeLiteral<Iterable<CachingServiceRegistry>>() {}).toProvider(
+        bind(Runnable.class).to(ImportManager.class).asEagerSingleton();
+        bind(iterable(CachingServiceRegistry.class)).toProvider(
             service(CachingServiceRegistry.class).multiple());
       }
 
@@ -108,11 +107,9 @@ public final class Activator
       }
     });
 
-    if (injector.getInstance(Key.get(int.class, named(FLUSH_INTERVAL_KEY))) >= 0) {
-      cleanupThread = new Thread(injector.getInstance(ImportManager.class));
-      cleanupThread.setDaemon(true);
-      cleanupThread.start();
-    }
+    cleanupThread = new Thread(injector.getInstance(Runnable.class));
+    cleanupThread.setDaemon(true);
+    cleanupThread.start();
   }
 
   public void stop(@SuppressWarnings("unused") final BundleContext ctx) {

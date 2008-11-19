@@ -16,7 +16,6 @@
 
 package org.ops4j.peaberry.test;
 
-import static org.apache.felix.framework.util.FelixConstants.SYSTEMBUNDLE_ACTIVATORS_PROP;
 import static org.apache.felix.main.Main.loadConfigProperties;
 import static org.testng.TestNGCommandLineArgs.parseCommandLine;
 
@@ -32,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.felix.framework.Felix;
+import org.apache.felix.framework.util.StringMap;
 import org.apache.felix.main.AutoActivator;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -69,14 +69,12 @@ public final class Director
   private static final Felix FELIX;
 
   static {
-    final Map config = loadConfigProperties();
+    final Map config = new StringMap(loadConfigProperties(), false);
 
     final List autoActivatorList = new ArrayList();
     autoActivatorList.add(new AutoActivator(config));
 
-    config.put(SYSTEMBUNDLE_ACTIVATORS_PROP, autoActivatorList);
-
-    FELIX = new Felix(config);
+    FELIX = new Felix(config, autoActivatorList);
   }
 
   public static class ObjectFactory

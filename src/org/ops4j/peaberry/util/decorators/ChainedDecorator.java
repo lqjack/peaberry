@@ -28,7 +28,7 @@ public final class ChainedDecorator<S>
   final ImportDecorator<S>[] decorators;
 
   public ChainedDecorator(final ImportDecorator<S>... decorators) {
-    this.decorators = decorators.clone();
+    this.decorators = decorators;
   }
 
   public <T extends S> Import<T> decorate(final Import<T> handle) {
