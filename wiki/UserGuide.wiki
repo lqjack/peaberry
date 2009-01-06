@@ -24,57 +24,63 @@ diag n   -  diagnose bundle
 
 =Fluent API Examples=
 
-Injecting a dictionary service:
+Injecting a stock quote service:
 
 {{{
  @Inject
- DictionaryService dictionaryService;
+ StockQuote quote;
  ...
- bind(DictionaryService.class).to(service(DictionaryService.class).single());
+ bind(StockQuote.class).to(service(StockQuote.class).single());
 }}}
 
-Injecting many dictionary services:
+Injecting many stock quote services:
 
 {{{
  @Inject
- Iterable<DictionaryService> dictionaryServices;
+ Iterable<StockQuote> quotes;
  ...
- bind(iterable(DictionaryService.class)).to(service(DictionaryService.class).multiple());
+ bind(iterable(StockQuote.class)).to(service(StockQuote.class).multiple());
 }}}
 
-Exporting an implementation as a dictionary service:
+Exporting an implementation as a stock quote service:
 
 {{{
  @Inject
  // the service can be controlled by the Export handle
- Export<DictionaryService> exportedDictionaryService;
+ Export<StockQuote> exportedQuote;
  ...
- // the service is actually exported at injection time
- bind(export(DictionaryService.class)).to(registration(dictionaryImplKey).export());
+ // the service is exported at injection time
+ bind(export(StockQuote.class)).to(service(myQuoteImpl).export());
 }}}
 
 Applying a custom filter to find a specific service:
 
 {{{
- service(DictionaryService.class).filter(ldap("(Language=French)")).single();
+ service(StockQuote.class).filter(ldap("(Currency=GBP)")).single()
 }}}
 
 Applying custom attributes to an exported service:
 
 {{{
- registration(dictionaryKey).attributes(names("Language=French")).export();
+ service(myQuoteImpl).attributes(names("Currency=GBP")).export()
 }}}
 
-NOTE: helper methods for dealing with filters and attributes are in the {{{org.ops4j.peaberry.util}}} package.
+(the {{{ldap}}} and {{{names}}} utility methods are from {{{org.ops4j.peaberry.util}}})
 
-You can also decorate an imported service with additional behaviour:
+You can also decorate services with additional behaviour:
 
 {{{
- service(DictionaryService.class).decoratedWith(decoratorImplKey).single();
+ service(StockQuote.class).decoratedWith(someDecoratorImpl).single()
 }}}
 
-or ask for the service to be injected directly, instead of a dynamic proxy:
+or ask for them to be injected directly, instead of using a dynamic proxy:
 
 {{{
- service(DictionaryService.class).direct().single();
+ service(StockQuote.class).single().direct()
+}}}
+
+similarly, if you don't want to bother with an Export handle when exporting:
+
+{{{
+ service(myQuoteImpl).export().direct()
 }}}
