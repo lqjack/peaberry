@@ -3,7 +3,7 @@
 
 =Eclipse/PDE Example - Text Scrambling Service=
 
- # download and unzip the [http://peaberry.googlecode.com/files/PeaberryExample.zip example]
+ # download and unzip the [http://peaberry.googlecode.com/files/PeaberryExample-1.0-rc1.zip example]
  # import the contents into Eclipse as existing projects
  # open *peaberry.platform* and set it as the target platform:
    [http://lh3.ggpht.com/mcculls/SI9u873Yg9I/AAAAAAAAA_o/CEl3JijDgtc/s800/1_load_target_platform.png http://lh3.ggpht.com/mcculls/SI9u873Yg9I/AAAAAAAAA_o/CEl3JijDgtc/s400/1_load_target_platform.png]
