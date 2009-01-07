@@ -1,0 +1,7 @@
+
+-removeheaders:\
+ Bnd-LastModified,\
+ Include-Resource,\
+ Private-Package,\
+ Tool
+
