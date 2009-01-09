@@ -22,7 +22,27 @@ start n  -  start bundle #n
 diag n   -  diagnose bundle
 }}}
 
+=Installing the OSGi binding module=
+
+{{{
+ // provides bindings for the current bundle context + OSGi service registry
+ Injector injector = Guice.createInjector(osgiModule(bundleContext), ...);
+}}}
+
 =Fluent API Examples=
+
+The following static imports were used to simplify the examples
+
+{{{
+import static org.ops4j.peaberry.Peaberry.osgiModule;
+import static org.ops4j.peaberry.Peaberry.service;
+
+import static org.ops4j.peaberry.util.TypeLiterals.export;
+import static org.ops4j.peaberry.util.TypeLiterals.iterable;
+
+import static org.ops4j.peaberry.util.Attributes.names;
+import static org.ops4j.peaberry.util.Filters.ldap;
+}}}
 
 Injecting a stock quote service:
 
