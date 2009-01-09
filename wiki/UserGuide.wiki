@@ -108,10 +108,10 @@ similarly, if you don't want to bother with an Export handle when exporting:
 And you can now actively watch for changes in the services you inject:
 
 {{{
- bind(StockQuote.class).to(service(StockQuote.class).out(new AbstractScope<Id>() {
+ bind(StockQuote.class).to(service(StockQuote.class).out(new AbstractScope<StockQuote>() {
 
   @Override
-  protected <T extends Id> T adding(Import<T> service) {
+  protected <T extends StockQuote> T adding(Import<T> service) {
    // the returned object is used in the modified and removed calls
    T instance = service.get();
    System.out.println("ADDING:" + instance);
@@ -119,12 +119,12 @@ And you can now actively watch for changes in the services you inject:
   }
 
   @Override
-  protected <T extends Id> void modified(T instance, Map<String, ?> attributes) {
+  protected <T extends StockQuote> void modified(T instance, Map<String, ?> attributes) {
    System.out.println("MODIFIED:" + instance);
   }
 
   @Override
-  protected <T extends Id> void removed(T instance) {
+  protected <T extends StockQuote> void removed(T instance) {
    System.out.println("REMOVED:" + instance);
   }
  }).multiple());
