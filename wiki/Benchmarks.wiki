@@ -3,7 +3,9 @@
 
 =OSGi service proxy microbenchmark=
 
-This is a very simple (perhaps simplistic!) microbenchmark that calculates how much overhead on average the given OSGi service proxy adds to each method call. It measures how long the raw implementation takes and subtracts this from however long the proxied service took. It does not take any account of the flexibility/features of each proxy.
+This is a very simple (perhaps simplistic!) microbenchmark that calculates how much overhead on average the given OSGi service proxy adds to each method call. It measures how long the raw implementation takes and subtracts this from however long the proxied service took.
+
+_It does not take into account the flexibility/features of each proxy implementation, but merely looks at the overhead cost._
 
  # download and unzip the service proxy [http://peaberry.googlecode.com/files/OSGiServiceProxyTest-1.0-rc1.zip microbenchmark]
  # import the contents into Eclipse as an existing project
@@ -22,7 +24,9 @@ Which shows a lot less overhead when using the peaberry service proxy.
 
 =Basic bundle footprint=
 
-This is another simple 'benchmark' where we measure the size of the bundle set required to run the above testcase for Guice-Peaberry and Spring-DM (note both frameworks use the AOP Alliance bundle).
+This is another simple 'benchmark' where we look at the size of the minimum bundle set required to run the above testcase.
+
+_Of course Spring-DM provides a lot of additional functionality over Guice-Peaberry, but we're interested in the minimum footprint possible._
 
 {{{
    8K com.springsource.org.aopalliance-1.0.0.jar
@@ -45,3 +49,5 @@ This is another simple 'benchmark' where we measure the size of the bundle set r
   36K spring-osgi-io-1.2.0-m2.jar
 }}}
 *2112K Spring-DM 1.2.0-m2*
+
+As you can see Guice-Peaberry takes up less than half the space of the smallest Spring-DM setup.
