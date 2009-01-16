@@ -19,9 +19,9 @@ public interface ServiceRegistry {
    * @param clazz expected service interface
    * @param filter service attribute filter
    * 
-   * @return ordered sequence of imported services, recommended service first
+   * @return ordered sequence of imported services, most recommended first
    */
-  <T> Iterable<Import<T>> lookup(Class<? extends T> clazz, AttributeFilter filter);
+  <T> Iterable<Import<T>> lookup(Class<T> clazz, AttributeFilter filter);
 }
 }}}
 
@@ -38,12 +38,19 @@ public interface Import<T> {
 
   /**
    * Start using the imported service instance.
-   *
+   * 
    * @return service instance
-   *
-   * @throws ServiceUnavailableException
+   * 
+   * @throws ServiceUnavailableException if the service is unavailable
    */
   T get();
+
+  /**
+   * Get the attributes associated with the service.
+   * 
+   * @return current attribute map, null if the service is unavailable
+   */
+  Map<String, ?> attributes();
 
   /**
    * Stop using the imported service instance.
@@ -102,49 +109,58 @@ However, there's a problem with this code - the import handle used to {{{get()}}
 After much prototyping, I finally found a solution that works without a {{{ThreadLocal}}}:
 
 {{{
-/*
- * Provide an import handle that dynamically delegates to the first service,
- * but also tracks its use (even across multiple threads) so that unget() is
- * always called on the same handle as get() was originally.
+/**
+ * Provide an {@link Import} that dynamically delegates to the best service but
+ * also tracks its use (even across multiple threads) so that unget() is always
+ * called on the same handle as get() was originally.
  * 
- * The solution below will use the same handle until no threads are actively
- * using the injected instance. This might keep a service in use for longer
- * than expected when there is heavy contention, but it doesn't require any
- * use of thread locals or additional context stacks.
+ * The solution below uses the same handle until no threads are actively using
+ * the injected instance. This might keep a service in use for a little longer
+ * than expected when there is heavy contention, but it doesn't require use of
+ * any thread locals or additional context stacks.
+ * 
+ * @author mcculls@gmail.com (Stuart McCulloch)
  */
-Import<T> lookup = new Import<T>() {
-  private long count = 0L;
+final class ConcurrentImport<T>
+    implements Import<T> {
+
+  private final Iterable<Import<T>> handles;
+
   private Import<T> handle;
   private T instance;
+  private int count;
 
+  public ConcurrentImport(final Iterable<Import<T>> handles) {
+    this.handles = handles;
+  }
+
+  // need barrier on entry...
   public synchronized T get() {
     count++;
     if (null == handle) {
       // first valid handle may appear at any time
-      handle = handles.iterator().next();
-      instance = handle.get(); // only called once
-    }
-    if (null == instance) {
-      // have handle, but service wasn't available
-      throw new ServiceUnavailableException();
+      final Iterator<Import<T>> i = handles.iterator();
+      if (i.hasNext()) {
+        handle = i.next();
+        instance = handle.get(); // only called once
+      }
     }
     return instance;
   }
 
+  public synchronized Map<String, ?> attributes() {
+    return null == instance ? null : handle.attributes();
+  }
+
   public synchronized void unget() {
-    if (--count == 0) {
-      try {
-        // last thread out
-        if (null != handle) {
-          handle.unget();
-        }
-      } finally {
-        instance = null;
-        handle = null;
-      }
+    // last thread to exit does the unget...
+    if (0 == --count && null != handle) {
+      instance = null;
+      handle.unget();
+      handle = null;
     }
   }
-};
+}
 }}}
 
 it basically guarantees that overlapping threads using the same injected instance will use the same service instance (as soon as one becomes available). The import handle is only "ungot" when the last thread exits. This has the happy side-effect of improving service consistency.
@@ -161,10 +177,10 @@ public interface ImportDecorator<S> {
   /**
    * Decorate the given imported service.
    * 
-   * @param handle service handle
+   * @param service imported service handle
    * @return decorated service handle
    */
-  <T extends S> Import<T> decorate(Import<T> handle);
+  <T extends S> Import<T> decorate(Import<T> service);
 }
 }}}
 
@@ -179,6 +195,10 @@ public class FooDecorator implements ImportDecorator<Foo> {
         return new MyFoo(handle.get());
       }
 
+      public Map<String, ?> attributes() {
+        return handle.attributes();
+      }
+
       public void unget() {
         handle.unget();
       }
@@ -187,9 +207,9 @@ public class FooDecorator implements ImportDecorator<Foo> {
 }
 }}}
 
-You could also write a decorator that caches the initial service instance, and uses it for subsequent calls until the time since the last call exceeds a set limit. This would improve the performance for heavily used services, because there's no point in querying every millisecond. _actually I think I'll provide an example decorator that does this in the util package_
+NOTE: {{{decoratedBy}}} can take a {{{Key}}}, which is used to retrieve the implementation at injection time, or an {{{ImportDecorator}}} instance.
 
-NOTE: {{{decoratedBy}}} takes a {{{Key}}}, which is used to retrieve the implementation at injection time.
+The {{{util}}} package provides an {{{AbstractDecorator}}} to help reduce the amount of code needed to decorate imports. It also provides methods to chain decorators together, as well as create "sticky" decorators that always use (i.e. stick to) the same service until the service disappears - at which point you can choose to stick to a new service.
 
 ===Direct Services===
 
@@ -204,17 +224,15 @@ NOTE: you could always use {{{Injector.getInstance(...)}}} or {{{Injector.inject
 OK, so we can inject services - but how about getting our own implementations into the service registry? Here's an attempt at what I call a "service scope", which is basically a dynamic collection of services:
 
 {{{
-public interface ServiceScope {
+public interface ServiceScope<S> {
 
   /**
-   * Export the given service to this scope with the associated attributes.
+   * Add the given service to this scope.
    * 
-   * @param service service instance
-   * @param attributes service attributes
-   * 
+   * @param service imported service handle
    * @return exported service handle, null if the scope is not interested
    */
-  <S, T extends S> Export<S> export(T service, Map<String, ?> attributes);
+  <T extends S> Export<T> add(Import<T> service);
 }
 }}}
 
@@ -230,20 +248,27 @@ When you export a service implementation to a scope, you get back an export hand
 public interface Export<T> {
 
   /**
-   * Modify the attributes associated with the exported service instance.
+   * Replace the exported service with the given instance.
+   * 
+   * @param instance service instance
+   */
+  void put(T instance);
+
+  /**
+   * Update the attributes associated with the exported service.
    * 
    * @param attributes service attributes
    */
-  void modify(Map<String, ?> attributes);
+  void attributes(Map<String, ?> attributes);
 
   /**
-   * Remove the exported service from the containing {@code ServiceScope}.
+   * Remove the exported service from the {@link ServiceScope}.
    */
-  void remove();
+  void unput();
 }
 }}}
 
-It would be also useful to get the actual service implementation from the export handle, so why not re-use the import interface:
+Note how this is the mirror of an {{{Import}}}. It would be also useful to get the actual service implementation from the export handle, so why not re-use the import interface:
 
 {{{
 public interface Export<T> extends Import<T> //...
@@ -251,4 +276,32 @@ public interface Export<T> extends Import<T> //...
 
 Which I think makes sense, if you're used to the semantics of OSGi.
 
-Following the same approach as before, *peaberry* can create {{{Provider<Export<T>>}}} instances, customized using a fluent API. The service implementation is specified by passing in the appropriate {{{Key}}} which is looked up via the injector at injection time, and exported to the appropriate registry. This means you can also programmatically export services at any time, by using {{{Injector.getInstance(...)}}} for the relevant exported handle, or by calling the provider directly.
+Following the same approach as before, *peaberry* can create {{{Provider<Export<T>>}}} instances, customized using a fluent API. The service implementation is specified by passing in the appropriate {{{Key}}} which is looked up via the injector at injection time, or by passing in an existing instance, and exported to the appropriate registry. This means you can also programmatically export services at any time, by using {{{Injector.getInstance(...)}}} for the relevant exported handle, or by calling the provider directly.
+
+===Service Outjection===
+
+{{{
+public interface ServiceRegistry
+    extends ServiceScope<Object> {
+
+  /**
+   * Lookup services from the registry, constrained by the given filter.
+   * 
+   * @param clazz expected service interface
+   * @param filter service attribute filter
+   * 
+   * @return ordered sequence of imported services, most recommended first
+   */
+  <T> Iterable<Import<T>> lookup(Class<T> clazz, AttributeFilter filter);
+
+  /**
+   * Watch for services in the registry, constrained by the given filter.
+   * 
+   * @param clazz expected service interface
+   * @param filter service attribute filter
+   * 
+   * @param scope the watching scope which receives any matching services
+   */
+  <T> void watch(Class<T> clazz, AttributeFilter filter, ServiceScope<? super T> scope);
+}
+}}}
