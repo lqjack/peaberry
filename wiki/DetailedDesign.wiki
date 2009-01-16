@@ -25,7 +25,23 @@ public interface ServiceRegistry {
 }
 }}}
 
-This design was influenced by OSGi, which uses service types and attribute filters to find matching services. From my experience this works very well, and I believe it's flexible enough to support other types of service registry.
+where the attribute filter is not tied to any specific filter language:
+
+{{{
+public interface AttributeFilter {
+
+  /**
+   * Tests whether or not this filter matches the given service attributes.
+   * 
+   * @param attributes service attributes
+   * 
+   * @return true if the given attributes match this filter, otherwise false
+   */
+  boolean matches(Map<String, ?> attributes);
+}
+}}}
+
+This design was influenced by OSGi, which uses service types and attribute filters to find matching services. Although here we allow any type of filtering, not just LDAP expressions. From my experience this works very well, and I believe it's flexible enough to support other types of service registry.
 
 The registry returns a sequence of imported services for a given query - this means we can use the same API call for providing single services, as well as sequences of services. Registry implementations can then provide lazy sequences, only expanding the search as and when the service iterator is called.
 
