@@ -111,20 +111,20 @@ And you can now actively watch for changes in the services you inject:
  bind(StockQuote.class).to(service(StockQuote.class).out(new AbstractScope<StockQuote>() {
 
   @Override
-  protected <T extends StockQuote> T adding(Import<T> service) {
+  protected StockQuote adding(Import<StockQuote> service) {
    // the returned object is used in the modified and removed calls
-   T instance = service.get();
+   StockQuote instance = service.get();
    System.out.println("ADDING:" + instance);
    return instance;
   }
 
   @Override
-  protected <T extends StockQuote> void modified(T instance, Map<String, ?> attributes) {
+  protected void modified(StockQuote instance, Map<String, ?> attributes) {
    System.out.println("MODIFIED:" + instance);
   }
 
   @Override
-  protected <T extends StockQuote> void removed(T instance) {
+  protected void removed(StockQuote instance) {
    System.out.println("REMOVED:" + instance);
   }
  }).multiple());
