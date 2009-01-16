@@ -59,7 +59,7 @@ public interface Import<T> {
 }
 }}}
 
-which is then proxied by the peaberry codebase to look like a {{{T}}}.
+which is then proxied by the *peaberry* codebase to look like a {{{T}}}.
 
 ===Proxy Generation===
 
@@ -280,19 +280,13 @@ Following the same approach as before, *peaberry* can create {{{Provider<Export<
 
 ===Service Outjection===
 
+Service outjection is where we notify an interested party whenever a matching service appears, is modified, or disappears (it can also be described as watching for services). We already have a type that can receive services, the {{{ServiceScope}}}, so why not re-use this for outjection/watching:
+
 {{{
 public interface ServiceRegistry
     extends ServiceScope<Object> {
 
-  /**
-   * Lookup services from the registry, constrained by the given filter.
-   * 
-   * @param clazz expected service interface
-   * @param filter service attribute filter
-   * 
-   * @return ordered sequence of imported services, most recommended first
-   */
-  <T> Iterable<Import<T>> lookup(Class<T> clazz, AttributeFilter filter);
+  // ...lookup is like polling...
 
   /**
    * Watch for services in the registry, constrained by the given filter.
@@ -305,3 +299,7 @@ public interface ServiceRegistry
   <T> void watch(Class<T> clazz, AttributeFilter filter, ServiceScope<? super T> scope);
 }
 }}}
+
+The {{{util}}} package provides an {{{AbstractScope}}} to help reduce the code needed to write your own service scope. It's based on the OSGi {{{ServiceTrackerCustomizer}}} design, but it is not OSGi specific.
+
+The *peaberry* DSL takes an optional service scope when building service proxies, this is passed to the registry using the same filter and class that's used to perform the lookup for the service proxy. This means you can lazily inject a service while also outjecting it to a given scope to actively watch for changes (to initialize resources, etc).
