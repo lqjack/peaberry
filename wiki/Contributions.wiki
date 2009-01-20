@@ -1,4 +1,4 @@
 #summary Statement of our contribution policy.
-#labels Phase-Implementation
+#labels Phase-Implementation,Featured
 
-peaberry is licensed under the [http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0] therefore we require all contributions that are of existing code _(code that wasn't developed inside of the project from scratch)_ to be attached to an issue and explicitly licensed under the same [http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0].
+peaberry is licensed under the [http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0] therefore we require all contributions that are of existing code _(code that wasn't developed inside of the project from scratch)_ to be attached to an issue and explicitly licensed under the same Apache License 2.0.
