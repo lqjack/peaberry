@@ -1,0 +1,2 @@
+#summary Thoughts on service lifecycle, not just limited to OSGi.
+#labels Phase-Design
