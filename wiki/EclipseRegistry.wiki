@@ -1,0 +1,2 @@
+#summary Using the Eclipse Extension Registry with peaberry.
+#labels Phase-Design
