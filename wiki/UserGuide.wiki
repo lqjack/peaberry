@@ -50,7 +50,7 @@ Injecting a stock quote service:
  @Inject
  StockQuote quote;
  ...
- bind(StockQuote.class).to(service(StockQuote.class).single());
+ bind(StockQuote.class).toProvider(service(StockQuote.class).single());
 }}}
 
 Injecting many stock quote services:
@@ -59,7 +59,7 @@ Injecting many stock quote services:
  @Inject
  Iterable<StockQuote> quotes;
  ...
- bind(iterable(StockQuote.class)).to(service(StockQuote.class).multiple());
+ bind(iterable(StockQuote.class)).toProvider(service(StockQuote.class).multiple());
 }}}
 
 Exporting an implementation as a stock quote service:
@@ -70,7 +70,7 @@ Exporting an implementation as a stock quote service:
  Export<StockQuote> exportedQuote;
  ...
  // the service is exported at injection time
- bind(export(StockQuote.class)).to(service(myQuoteImpl).export());
+ bind(export(StockQuote.class)).toProvider(service(myQuoteImpl).export());
 }}}
 
 Applying a custom filter to find a specific service:
@@ -108,7 +108,7 @@ similarly, if you don't want to bother with an Export handle when exporting:
 And you can now actively watch for changes in the services you inject:
 
 {{{
- bind(StockQuote.class).to(service(StockQuote.class).out(new AbstractScope<StockQuote>() {
+ bind(StockQuote.class).toProvider(service(StockQuote.class).out(new AbstractScope<StockQuote>() {
 
   @Override
   protected StockQuote adding(Import<StockQuote> service) {
