@@ -105,6 +105,12 @@ similarly, if you don't want to bother with an Export handle when exporting:
  service(myQuoteImpl).export().direct()
 }}}
 
+You can use your own registry implementation, instead of the default binding:
+
+{{{
+ service(StockQuote.class).in(myRegistryImpl).single()
+}}}
+
 And you can now actively watch for changes in the services you inject:
 
 {{{
