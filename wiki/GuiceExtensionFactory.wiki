@@ -64,8 +64,8 @@ and again, this time using an interface instead of the implementation:
 
 ===How do I use peaberry with the GuiceExtensionFactory?===
 
-Module bindings to support lookup of services from the OSGi service registry and Eclipse extension registry are automatically installed by the factory:
+Basic peaberry bindings to support lookup of services from the OSGi service registry and Eclipse extension registry are automatically installed by the factory, which effectively does this:
 {{{
 binder.install(Peaberry.osgiModule(contributorContext, EclipseRegistry.eclipseRegistry()));
 }}}
-So you don't have to install this yourself, you only need to provide your own custom bindings.
+So you only need to add your own custom bindings to the `org.ops4j.peaberry.eclipse.modules` extension.
