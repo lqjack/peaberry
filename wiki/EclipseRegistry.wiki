@@ -3,7 +3,7 @@
 
 ===Adding the !EclipseRegistry to your module bindings===
 
-The latest version of peaberry ([http://peaberry.googlecode.com/files/peaberry-1.1-beta1.zip 1.1 beta1]) has a new variant of the `osgiModule` method that accepts a valid bundle context and a list of service registries. These alternative registries are considered when looking up or watching for services, but *not* when adding a service. You can use this to mix-in the [http://peaberry.googlecode.com/files/peaberry-eclipse-1.0-beta2.zip peaberry-eclipse] extension registry implementation.
+The latest version of peaberry ([http://peaberry.googlecode.com/files/peaberry-1.1-beta3.zip 1.1 beta3]) has a new variant of the `osgiModule` method that accepts a valid bundle context and a list of service registries. These alternative registries are considered when looking up or watching for services, but *not* when adding a service. You can use this to mix-in the *peaberry.eclipse* extension registry implementation.
 
 To add lookup of Eclipse extensions to your Guice module, instead of using:
 {{{
@@ -59,7 +59,7 @@ We also follow a similar bean mapping [http://wiki.eclipse.org/Riena_Getting_Sta
 
 ===But how do I inject dependencies into extensions?===
 
-The [http://peaberry.googlecode.com/files/peaberry-eclipse-1.0-beta2.zip peaberry-eclipse] bundle also provides a factory class to help inject extension instances using Guice. This factory is documented [GuiceExtensionFactory here].
+The *peaberry-eclipse* bundle also provides a factory class to help inject extension instances using Guice. This factory is documented [GuiceExtensionFactory here].
 
 ===Example please!===
 
