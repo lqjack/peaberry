@@ -5,17 +5,11 @@ _This work was influenced by Martin Lippert's [http://martinlippert.blogspot.com
 
 ===What is the !GuiceExtensionFactory?===
 
-The [http://code.google.com/p/peaberry/source/browse/trunk/extensions/eclipse/src/org/ops4j/peaberry/eclipse/GuiceExtensionFactory.java GuiceExtensionFactory] is an `IExecutableExtensionFactory` that collects `Module` bindings registered under a particular extension point. This extension point is named in the `inject` attribute of the extension being created by this factory. The factory creates an `Injector` based on the discovered `Module` bindings and uses it to build the injected extension instance. Injectors will be re-used for extensions with the same `inject` attribute, unless the cache is forcibly `reset()` by the application.
+The [http://code.google.com/p/peaberry/source/browse/trunk/extensions/eclipse/src/org/ops4j/peaberry/eclipse/GuiceExtensionFactory.java GuiceExtensionFactory] is an `IExecutableExtensionFactory` that creates an injected extension based on the class named in the adapter data section. If the data section is empty the class is assumed to be in the `id` attribute. The factory searches the `org.ops4j.peaberry.eclipse.modules` extension for `Module`s belonging to the same plug-in and uses them to create a new `Injector`. This injector creates the injected extension and is then cached so it can be re-used for other extensions in the same plug-in.
 
-To use this factory:
+To use the factory put it in front of your class name in the extension XML. Or replace your class with the factory and put your class in the `id` attribute instead. Because the implementation will be injected based on the bindings you could even replace your class name with one of its interfaces, and that interface will then be used to lookup the correct implementation. 
 
-  # rename your class attribute, for example from `class=` to `key=`
-  # add `class=org.ops4j.peaberry.eclipse.GuiceExtensionFactory:key`
-  # add an `inject` attribute identifying the module extension point
-
-... and sit back!
-
-Here's a more detailed example, based on the standard RCP Mail Template:
+Here's a more detailed walkthrough, based on the example RCP Mail Template:
 {{{
 <extension point="org.eclipse.ui.views">
   <view name="Message"
@@ -31,38 +25,47 @@ becomes:
   <view name="Message"
         allowMultiple="true"
         icon="icons/sample2.gif"
-        inject="example.modules"
-        class="org.ops4j.peaberry.eclipse.GuiceExtensionFactory:key"
-        key="example.ViewImpl"
+        class="org.ops4j.peaberry.eclipse.GuiceExtensionFactory:example.ViewImpl"
         id="example.view" />
 </extension>
 
-<!-- then somewhere else -->
-
-<extension point="example.modules">
+<extension point="org.ops4j.peaberry.eclipse.modules">
   <module class="example.ViewModule" />
 </extension>
 }}}
-If no name is given after the factory class it is assumed to be "id":
+Here's the same example with the class in the `id` attribute:
 {{{
 <extension point="org.eclipse.ui.views">
   <view name="Message"
         allowMultiple="true"
         icon="icons/sample2.gif"
-        inject="example.modules"
         class="org.ops4j.peaberry.eclipse.GuiceExtensionFactory"
         id="example.ViewImpl" />
 </extension>
-}}}
 
-*NOTE:* the !GuiceExtensionFactory class only uses Guice and Eclipse registry classes. It does not depend on other _peaberry_ classes and could therefore be used on its own if you wanted basic Guice injection without dynamic services.
+<extension point="org.ops4j.peaberry.eclipse.modules">
+  <module class="example.ViewModule" />
+</extension>
+}}}
+and again, this time using an interface instead of the implementation: 
+{{{
+<extension point="org.eclipse.ui.views">
+  <view name="Message"
+        allowMultiple="true"
+        icon="icons/sample2.gif"
+        class="org.ops4j.peaberry.eclipse.GuiceExtensionFactory:org.eclipse.ui.IViewPart"
+        id="example.view" />
+</extension>
+
+<extension point="org.ops4j.peaberry.eclipse.modules">
+  <module class="example.ViewModule" />
+</extension>
+}}}
 
 ===How do I use peaberry with the GuiceExtensionFactory?===
 
-The [http://peaberry.googlecode.com/files/peaberry-eclipse-1.0-beta2.zip peaberry-eclipse] jar contains an executable extension called [http://code.google.com/p/peaberry/source/browse/trunk/extensions/eclipse/src/org/ops4j/peaberry/eclipse/PeaberryExtension.java PeaberryExtension]. This extension installs Guice bindings for the contributing plug-in's `BundleContext` as well as a `ServiceRegistry` that monitors OSGi services and Eclipse extensions. To use it you just need to add it to the list of `Module` extensions under the relevant extension point:
+Module bindings to support lookup of services from the OSGi service registry and Eclipse extension registry are automatically installed by the factory:
 {{{
-<extension point="examples.menu.modules">
-  <module class="org.ops4j.peaberry.eclipse.PeaberryExtension" />
-</extension>
+binder.install(Peaberry.osgiModule(contributorContext, EclipseRegistry.eclipseRegistry()));
 }}}
-In this case `BundleContext` would be the context of the plug-in contributing this XML fragment.
+So you don't have to install this yourself, you only need to provide your own custom bindings.
