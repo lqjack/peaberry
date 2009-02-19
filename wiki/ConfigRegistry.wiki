@@ -1,0 +1,2 @@
+#summary placeholder for design discussion about injecting dynamic configuration.
+#labels Phase-Design
