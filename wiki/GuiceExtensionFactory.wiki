@@ -1,5 +1,5 @@
 #summary using the GuiceExtensionFactory with Eclipse plug-ins
-#labels Phase-Design,Featured
+#labels Phase-Design
 
 _This work was influenced by Martin Lippert's [http://martinlippert.blogspot.com/2008/05/dependency-injection-for-extensions.html SpringExtensionFactory]._
 
