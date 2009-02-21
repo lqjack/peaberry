@@ -1,2 +1,27 @@
-#summary placeholder for design discussion about injecting dynamic configuration.
+#summary Discussion about injecting dynamic configuration.
 #labels Phase-Design
+
+= Introduction =
+
+Configuration is a crosscutting concern. This means that a single body of configuration items is typically needed at points all over the code. Some items are shared, others are used in one spot only. As such configuration is an ideal candidate for dependency injection. Guice has facilities that allow the user to take a property file and inject it's elements all over the code at @Named("property.key") injection points. 
+
+This is all perfectly adequate for code that is configured once at startup. When the code heeds to be reconfigured at runtime however this mechanism is no longer sufficient. A dynamic configuration framework must support a much richer set of requirements than a static one.
+
+= Requirements =
+
+* Fine injection granularity
+Just like with static config items every dynamic config item must be injectable by itself. In this way every class can declare dependencies on exactly the config items it needs rather than on the entire configuration package.
+
+* Singleton scoped
+Often the same config item needs to be injected at multiple points. When it changes all injection points must be updated in unison. For this reason it's best to inject the same dynamic config object at all injection points. E.g. the dynamic config objects must be singleton scoped.
+
+* Support for lazy update
+Often the configured code regularly reads a particular config item value as it goes about it's business. If that value changes between two loops the configured code must pick up the new value the next time it reads the config item. This requirement rules out the option to inject immutable value objects. Instead an object with a no-arg method must be invoked every time the value is needed. One possible candidate for the job is the Provider interface and it's no-arg get() method.
+
+* Support for dynamic update
+Some times the configured code must react to the change of a config item on the spot. An example for this is an accept loop that is reconfigured to listen on another port. It is very desirable that as soon as the config changes the old server socket gets closed and the accept loop is restarted on a socket opened on the new port.
+To support this some lifecycle methods must be called by the dynamic configuration framework. Here two designs are possible: either a predefined listener interface will be passed to the dynamic configuration framework at injection time or it will search the injected objects for properly annotated methods.
+
+= Suggested Design =
+
+Coming soon :)
