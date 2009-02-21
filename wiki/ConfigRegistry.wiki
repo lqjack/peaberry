@@ -22,6 +22,9 @@ Often the configured code regularly reads a particular config item value as it g
 Some times the configured code must react to the change of a config item on the spot. An example for this is an accept loop that is reconfigured to listen on another port. It is very desirable that as soon as the config changes the old server socket gets closed and the accept loop is restarted on a socket opened on the new port.
 To support this some lifecycle methods must be called by the dynamic configuration framework. Here two designs are possible: either a predefined listener interface will be passed to the dynamic configuration framework at injection time or it will search the injected objects for properly annotated methods.
 
+ * Implementation for the OSGi ConfigAdmin
+Even if this is designed as a general purpose solution there must be an implementation that takes configuration values and update events from the OSGi ConfigAdmin service.
+
 = Suggested Design =
 
 Coming soon :)
