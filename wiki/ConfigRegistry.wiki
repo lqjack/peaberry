@@ -9,13 +9,13 @@ This is all perfectly adequate for code that is configured once at startup. When
 
 = Requirements =
 
-* Fine injection granularity
+  * Fine injection granularity
 Just like with static config items every dynamic config item must be injectable by itself. In this way every class can declare dependencies on exactly the config items it needs rather than on the entire configuration package.
 
-* Singleton scoped
+  * Singleton scoped
 Often the same config item needs to be injected at multiple points. When it changes all injection points must be updated in unison. For this reason it's best to inject the same dynamic config object at all injection points. E.g. the dynamic config objects must be singleton scoped.
 
-* Support for lazy update
+  * Support for lazy update
 Often the configured code regularly reads a particular config item value as it goes about it's business. If that value changes between two loops the configured code must pick up the new value the next time it reads the config item. This requirement rules out the option to inject immutable value objects. Instead an object with a no-arg method must be invoked every time the value is needed. One possible candidate for the job is the Provider interface and it's no-arg get() method.
 
 * Support for dynamic update
