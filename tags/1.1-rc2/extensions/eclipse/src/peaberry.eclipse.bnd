@@ -1,0 +1,9 @@
+
+-include: ~${common.dir}/common.bnd
+
+Bundle-SymbolicName: ${module};singleton:=true
+Bundle-Activator: ${module}.Activator
+
+extra.includes:\
+ plugin.xml=../plugin.xml
+
