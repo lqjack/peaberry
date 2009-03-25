@@ -53,7 +53,7 @@ Just like with OSGi services, extensions are looked up using the `ServiceRegistr
 
 ===How does this relate to the Eclipse Riena Project?===
 
-The [http://wiki.eclipse.org/Riena_Project Riena] project uses similar annotations, at least in name, and a similar bean approach. You can re-use the @MapName and @MapContent annotations from Riena, because peaberry uses reflection to search for map annotations. However, instead of using `@ExtensionInterface` we've introduced our own annotation called `@ExtensionBean` because we need to be able to specify the extension point id and flag aggregated extension beans.
+The [http://wiki.eclipse.org/Riena_Project Riena] project uses similar annotations, at least in name, and a similar bean approach. You can re-use the `@MapName` and `@MapContent` annotations from Riena, because peaberry uses reflection to search for map annotations. However, instead of using `@ExtensionInterface` we've introduced our own annotation called `@ExtensionBean` because we need to be able to specify the extension point id and flag aggregated extension beans.
 
 We also follow a similar bean mapping [http://wiki.eclipse.org/Riena_Getting_Started_with_injecting_services_and_extensions#Injecting_Extensions process], so people used to Riena dependency injection process should feel at home.
 
