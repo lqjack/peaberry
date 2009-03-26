@@ -3,4 +3,4 @@
 
 = !EclipseCon 2009 =
 
-[http peaberry - blending services and extensions]
+[http://peaberry.googlecode.com/files/peaberry%20-%20blending%20services%20and%20extensions.odp peaberry - blending services and extensions]
