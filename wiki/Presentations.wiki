@@ -1,4 +1,6 @@
 #summary Presentations given about peaberry.
 #labels Featured,Phase-Support
 
-= EclipseCon 2009 =
+= !EclipseCon 2009 =
+
+[peaberry - blending services and extensions]
