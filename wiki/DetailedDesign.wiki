@@ -237,28 +237,28 @@ NOTE: you could always use {{{Injector.getInstance(...)}}} or {{{Injector.inject
 
 ===Service Registration===
 
-OK, so we can inject services - but how about getting our own implementations into the service registry? Here's an attempt at what I call a "service scope", which is basically a dynamic collection of services:
+OK, so we can inject services - but how about getting our own implementations into the service registry? Here's an attempt at what I call a "service watcher", which is basically something that can receive services:
 
 {{{
-public interface ServiceScope<S> {
+public interface ServiceWatcher<S> {
 
   /**
-   * Add the given service to this scope.
-   * 
+   * Add the given service to this watcher.
+   *
    * @param service imported service handle
-   * @return exported service handle, null if the scope is not interested
+   * @return exported service handle, null if the watcher is not interested
    */
   <T extends S> Export<T> add(Import<T> service);
 }
 }}}
 
-This interface is separate from {{{ServiceRegistry}}} because not all collections of services may be query-able. However a registry is a scope, so it should extend it:
+This interface is separate from {{{ServiceRegistry}}} because not all watchers of services may be query-able. However a registry is a watcher, so it should extend it:
 
 {{{
-public interface ServiceRegistry extends ServiceScope //...
+public interface ServiceRegistry extends ServiceWatcher //...
 }}}
 
-When you export a service implementation to a scope, you get back an export handle:
+When you export a service implementation to a watcher, you get back an export handle:
 
 {{{
 public interface Export<T> {
@@ -278,7 +278,7 @@ public interface Export<T> {
   void attributes(Map<String, ?> attributes);
 
   /**
-   * Remove the exported service from the {@link ServiceScope}.
+   * Remove the exported service from the {@link ServiceWatcher}.
    */
   void unput();
 }
@@ -296,26 +296,27 @@ Following the same approach as before, *peaberry* can create {{{Provider<Export<
 
 ===Service Outjection===
 
-Service outjection is where we notify an interested party whenever a matching service appears, is modified, or disappears (it can also be described as watching for services). We already have a type that can receive services, the {{{ServiceScope}}}, so why not re-use this for outjection/watching:
+Service outjection is where we notify an interested party whenever a matching service appears, is modified, or disappears (it can also be described as watching for services). We already have a type that can receive services, the {{{ServiceWatcher}}}, so why not re-use this for outjection/watching:
 
 {{{
 public interface ServiceRegistry
-    extends ServiceScope<Object> {
+    extends ServiceWatcher<Object> {
 
   // ...lookup is like polling...
 
   /**
    * Watch for services in the registry, constrained by the given filter.
-   * 
+   *
    * @param clazz expected service interface
    * @param filter service attribute filter
-   * 
-   * @param scope the watching scope which receives any matching services
+   * @param watcher the watcher that should receive any matching services
+   *
+   * @throws UnsupportedOperationException if watching is not supported
    */
-  <T> void watch(Class<T> clazz, AttributeFilter filter, ServiceScope<? super T> scope);
+  <T> void watch(Class<T> clazz, AttributeFilter filter, ServiceWatcher<? super T> watcher);
 }
 }}}
 
-The {{{util}}} package provides an {{{AbstractScope}}} to help reduce the code needed to write your own service scope. It's based on the OSGi {{{ServiceTrackerCustomizer}}} design, but it is not OSGi specific.
+The {{{util}}} package provides an {{{AbstractWatcher}}} to help reduce the code needed to write your own service watcher. It's based on the OSGi {{{ServiceTrackerCustomizer}}} design, but it is not OSGi specific.
 
-The *peaberry* DSL takes an optional service scope when building service proxies, this is passed to the registry using the same filter and class that's used to perform the lookup for the service proxy. This means you can lazily inject a service while also outjecting it to a given scope to actively watch for changes (to initialize resources, etc).
+The *peaberry* DSL takes an optional service watcher when building service proxies, this is passed to the registry using the same filter and class that's used to perform the lookup for the service proxy. This means you can lazily inject a service while also outjecting it to a given watcher to actively look for changes (to initialize resources, etc).
