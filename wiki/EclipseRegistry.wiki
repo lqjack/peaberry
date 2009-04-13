@@ -3,7 +3,7 @@
 
 ===Adding the !EclipseRegistry to your module bindings===
 
-The latest upload of peaberry ([http://peaberry.googlecode.com/files/peaberry-1.1-rc2.zip 1.1-rc2]) has a new variant of the `osgiModule` method that accepts a valid bundle context and a list of service registries. These alternative registries are considered when looking up or watching for services, but *not* when adding a service. You can use this to mix-in the *peaberry.eclipse* extension registry implementation.
+The latest release of peaberry ([http://peaberry.googlecode.com/files/peaberry-1.1.zip 1.1]) has a new variant of the `osgiModule` method that accepts a valid bundle context and a list of service registries. These alternative registries are considered when looking up or watching for services, but *not* when adding a service. You can use this to mix-in the *peaberry.eclipse* extension registry implementation.
 
 To add lookup of Eclipse extensions to your Guice module, instead of using:
 {{{
