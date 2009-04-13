@@ -114,7 +114,7 @@ You can use your own registry implementation, instead of the default binding:
 And you can now actively watch for changes in the services you inject:
 
 {{{
- bind(StockQuote.class).toProvider(service(StockQuote.class).out(new AbstractScope<StockQuote>() {
+ bind(StockQuote.class).toProvider(service(StockQuote.class).out(new AbstractWatcher<StockQuote>() {
 
   @Override
   protected StockQuote adding(Import<StockQuote> service) {
@@ -136,4 +136,4 @@ And you can now actively watch for changes in the services you inject:
  }).multiple());
 }}}
 
-!AbstractScope is a utility class to make implementing !ServiceScope a bit easier.
+!AbstractWatcher is a utility class to make implementing !ServiceWatcher a bit easier.
