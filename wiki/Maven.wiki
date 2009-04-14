@@ -1,14 +1,20 @@
 #summary peaberry artifacts uploaded to Maven.
 #labels Phase-Deploy
 
-peaberry 1.0 is now available on the central Maven repository:
+peaberry 1.1 is now available on the central Maven repository:
 
 {{{
   <dependencies>
     <dependency>
       <groupId>org.ops4j</groupId>
       <artifactId>peaberry</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
+    </dependency>
+    <!-- only needed when injecting Eclipse extensions -->
+    <dependency>
+      <groupId>org.ops4j</groupId>
+      <artifactId>peaberry.eclipse</artifactId>
+      <version>1.1</version>
     </dependency>
     <!-- bundle-ized dependencies, not official releases -->
     <dependency>
