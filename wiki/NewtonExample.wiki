@@ -1,0 +1,14 @@
+#summary Example of using the peaberry bundle with Newton/Infiniflow.
+
+=Newton/Infiniflow Example=
+
+This short example shows how you can easily switch between local and distributed OSGi services by using peaberry with the [http://newton.codecauldron.org Newton/Infiniflow] distributed OSGi framework.
+
+ # Download [http://newton.codecauldron.org/site/download/release-1.3.2.html Newton 1.3.2]
+ # Download [http://peaberry.googlecode.com/files/peaberry-1.1.1-newton-example.zip the example]
+ # {{{unzip newton_bin-1.3.2.zip}}}
+ # {{{cd newton-1.3.2}}}
+ # {{{unzip peaberry-1.1.1-newton-example.zip}}}
+ # now read *examples/peaberry/README.txt*
+
+This example is based on the original [http://newton.codecauldron.org/site/example/Spring-OSGi-Chainlink.html Spring-OSGi-Chainlink] example. A short condensed list of instructions specific to peaberry can be found in examples/peaberry/README.txt, for more context please consult the original Spring-OSGi-Chainlink instructions.
