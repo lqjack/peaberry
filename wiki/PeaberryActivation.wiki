@@ -1,4 +1,4 @@
-#Automatic bootstrapping of Peaberry bundles
+#summary Automatic bootstrapping of Peaberry bundles
 
 = Introduction =
 
