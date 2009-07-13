@@ -122,6 +122,6 @@ If some of the bundle singletons need additional activation or deactivation we c
   ...
 }}}
 
-The `@Start` and `@Stop` annotations are located in the `org.ops4j.peaberry.activation` package. Notice that if a method is annotated by has parameters it will be ignored. In future version an error will be emitted for such methods.
+The `@Start` and `@Stop` annotations are located in the `org.ops4j.peaberry.activation` package. Notice that if a method is annotated but has parameters it will be ignored. In a future version an error will be emitted for such methods.
 
 We can annotate as many methods as we like. All `@Start` methods will be called in the order in which they are defined in the bundle class. Same goes for the `@Stop` methods.
