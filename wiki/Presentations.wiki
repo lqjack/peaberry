@@ -3,4 +3,4 @@
 
 = !EclipseCon 2009 =
 
-[http://peaberry.googlecode.com/files/peaberry%20-%20blending%20services%20and%20extensions.odp peaberry - blending services and extensions]
+ peaberry - blending services and extensions ( [http://peaberry.googlecode.com/files/peaberry%20-%20blending%20services%20and%20extensions.odp ODP] | [http://peaberry.googlecode.com/files/peaberry%20-%20blending%20services%20and%20extensions.pdf PDF] | [http://www.slideshare.net/mcculls/peaberry-blending-services-and-extensions SlideShare] )
