@@ -117,7 +117,7 @@ If some of the bundle singletons need additional activation or deactivation we c
   ...
   @Stop
   public void stop() {
-    System.out.println("Goodbine!");
+    System.out.println("Goodbye!");
   }
   ...
 }}}
