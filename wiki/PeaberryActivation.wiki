@@ -3,7 +3,7 @@
 = Introduction =
 
 Every Guice application has to be bootstrapped by a small amount of code where the Injector is created and the first few objects are wired together. The goal of Peaberry Activation is to remove the need to write this bit of bootstrap code. In this way Guice users can work in a completely declarative way only having to code their `Modules`.
-Currently Peaberry Activation works only under OSGi,
+Currently Peaberry Activation works only under OSGi.
 
 = Details =
 
