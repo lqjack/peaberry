@@ -106,7 +106,7 @@ The Peaberry Activation extender will instantiate the bootstrap module and pass 
 
   * We can't relay on direct Peaberry exports. Every singleton that needs to be exposed as a service must have a companion `Export<T>` binding as shown in the example above.
 
-If some of the bundle singletons need additional activation or deactivation we can annotate any parameter-less method of the bundle root class as follows:
+If some of the bundle singletons need additional activation or deactivation we can annotate any parameter-less method of the respective singleton class as follows:
 
 {{{
   ...
