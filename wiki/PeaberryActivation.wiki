@@ -109,17 +109,22 @@ The Peaberry Activation extender will instantiate the bootstrap module and pass 
 If some of the bundle singletons need additional activation or deactivation we can annotate any parameter-less method of the respective singleton class as follows:
 
 {{{
-  ...
+public HelloImpl implements Hello {
+
+  public void hello(String who) {
+    System.out.println("Hello " + who + "!");
+  }
+
   @Start
   public void start() {
-    System.out.println("Hello!");
+    System.out.println("Hello service online");
   }
-  ...
+
   @Stop
   public void stop() {
-    System.out.println("Goodbye!");
+    System.out.println("Hello service offline");
   }
-  ...
+}
 }}}
 
 The `@Start` and `@Stop` annotations are located in the `org.ops4j.peaberry.activation` package. Notice that if a method is annotated but has parameters it will be ignored. In a future version an error will be emitted for such methods.
