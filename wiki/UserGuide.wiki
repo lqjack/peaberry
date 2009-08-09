@@ -5,7 +5,7 @@
 
  # download and unzip the [http://peaberry.googlecode.com/files/PeaberryExample-1.0.zip example]
  # import the contents into Eclipse as existing projects
- # open *peaberry.platform* and set it as the target platform:
+ # open *peaberry.target* and set it as the target platform:
    [http://lh3.ggpht.com/mcculls/SI9u873Yg9I/AAAAAAAAA_o/CEl3JijDgtc/s800/1_load_target_platform.png http://lh3.ggpht.com/mcculls/SI9u873Yg9I/AAAAAAAAA_o/CEl3JijDgtc/s400/1_load_target_platform.png]
  # right-click on *peaberry.launch* and select Run As... -> peaberry:
    [http://lh4.ggpht.com/mcculls/SI9u881dwpI/AAAAAAAAA_w/YYGeevhRI88/s800/2_run_test_launcher.png http://lh4.ggpht.com/mcculls/SI9u881dwpI/AAAAAAAAA_w/YYGeevhRI88/s400/2_run_test_launcher.png]
