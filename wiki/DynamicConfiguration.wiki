@@ -49,7 +49,7 @@ Evaluation:
 
 == Configuration as bundle lifecycle ==
 
-Here we treat the config update as a bundle lifecycle event and restart the bundle. Than we can pass the config items at good old `@Named` injection points. Upon config update we stop everything, drop the bundle internals, create new ones against the the new config, and start them. Restarting the bundle will destroy any runtime state it has accumulated during it's operation. This means that bundles that accumulate lot's of runtime state will need to either live with it's loss or store/load it as part of their lifecycle. I am not sure how much of an issue this really is. Normally we use stateless bundles or if they are stateful the load/store is a normal requirement. Probably this is a blocker issue for transient state that can't be restored like communication sessions.
+Here we treat the config update as a bundle lifecycle event and restart the bundle. Than we can pass the config items at good old `@Named` injection points. Upon config update we stop everything, drop the bundle internals, create new ones against the the new config, and start them. Restarting the bundle will destroy any runtime state it has accumulated during it's operation. This means that bundles that accumulate lot's of runtime state will need to either live with it's loss or store/load it as part of their lifecycle. It is not certain how much of an issue this really is. Normally we use stateless bundles or if they are stateful the load/store is a normal requirement. Probably this is a blocker issue for transient state that can't be restored like communication sessions.
 
 Evaluation:
  * `(+)` Fine configuration granularity
