@@ -11,10 +11,13 @@ This is all perfectly adequate for code that is configured once at startup. When
 
 Here is a list of possible requirements. We can use these as means to compare suggested solutions.
 
-  * Fine granularity
+  * Fine configuration granularity
 Just like with static config `@Named` items dynamic config item must be individually injectable. Each class should be able to cherry-pick only the items it needs.
 
-  * Atomicity
+  * Fine update granularity
+We would like the impact of dynamic configuration update to be localized to the places in the program, which consume the relevant configuration items. We would like to leave it to the developer to choose how much of the accumulated runtime state must be destroyed as a result of configuration update.
+
+  * Atomic update
 Often items from the same configuration are related. This relation must be preserved when sapping a new configuration in place of an old one. E.g. we can have a `min` and `max` values with the invariant that `min < max`.
 
   * Dynamic update
@@ -29,9 +32,6 @@ Use current all the standard injection techniques: inject to setters, constructo
  * Safety
 Synchronization swaps happen concurrently to the application control flow. It would be best if we can hide this complexity from the developers. They should not care about synchronization or atomicity of config swaps.
  
- * Generality
-We aim to support the ConfigAdmin service under OSGi. However it would be nice if we can support dynamic configuration updates in other environments.
-
 = Suggested Designs =
 
 == Config as composite value ==
@@ -39,20 +39,22 @@ We aim to support the ConfigAdmin service under OSGi. However it would be nice i
 The idea is to use some of Clojure's principles: the entire config is a single composite immutable value. The various config elements are accessed by dereferencing this value and than browsing through it's guts. When a config swap comes the entire value is swapped in one atomic step. The developers know to access configuration information in two steps: pop the config, and than browse it's content. This is the only way to compensate for the lack of transactions: i.e. the app can't have any other way to look at several related config items at once.
 
 Evaluation:
- * `(-)` Fine granularity
- * `(+)` Atomicity
+ * `(-)` Fine configuration granularity
+ * `(+)` Fine update granularity
+ * `(+)` Atomic update
  * `(+)` Dynamic update
  * `(-)` Static update
  * `(-)` Simplicity
  * `(+)` Safety
 
-== Config as bundle lifecycle ==
+== Configuration as bundle lifecycle ==
 
-Another design is to treat the config update as a bundle lifecycle event and restart the bundle. Than we can pass the config items at good old @Named injection points because upon update we stop everything, drop the bundle internals, create new ones against the the new config, and start them.
+Here we treat the config update as a bundle lifecycle event and restart the bundle. Than we can pass the config items at good old `@Named` injection points because upon update we stop everything, drop the bundle internals, create new ones against the the new config, and start them. Restarting the bundle will destroy any runtime state it has accumulated during it's operation. This means that bundles that accumulate lot's of runtime state will need to either live with it's loss or store/load it as part of their lifecycle. I am not sure how much of an issue this really is. Normally we use stateless bundles or if they are stateful the load/store is a normal requirement. Probably this is a blocker issue for transient state that can't be restored like communication sessions.
 
 Evaluation:
- * `(+)` Fine granularity
- * `(+)` Atomicity
+ * `(+)` Fine configuration granularity
+ * `(-)` Fine update granularity
+ * `(+)` Atomic update
  * `(-)` Dynamic update
  * `(+)` Static update
  * `(+)` Simplicity
@@ -67,8 +69,9 @@ Here we fold the re-configuration into the future lifecycle extension. A config 
  * We use start/stop methods to restart the object. This time all config items are passed as parameters to the `start()` method. Again we have atomicity by using many parameters. This essentially mimics the bundle restart approach but at a finer granularity.
 
 Evaluation:
- * `(+)` Fine granularity
- * `(-)` Atomicity
+ * `(+)` Fine configuration granularity
+ * `(+)` Fine update granularity
+ * `(+)` Atomic update
  * `(-)` Dynamic update
  * `(+)` Static update
  * `(+)` Simplicity
