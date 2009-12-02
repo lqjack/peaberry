@@ -68,6 +68,8 @@ Here we fold the re-configuration into the future lifecycle extension. A config 
 
  * We use start/stop methods to restart the object. This time all config items are passed as parameters to the `start()` method. Again we have atomicity by using many parameters. This essentially mimics the bundle restart approach but at a finer granularity.
 
+The major drawback of this solution is that we need a full blown lifecycle extension, which we currently do not have.
+
 Evaluation:
  * `(+)` Fine configuration granularity
  * `(+)` Fine update granularity
