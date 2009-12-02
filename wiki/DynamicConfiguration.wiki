@@ -36,7 +36,7 @@ Synchronization swaps happen concurrently to the application control flow. It wo
 
 == Configuration as a transactional swap ==
 
-The idea is to use some of Clojure's principles: the entire config is a single composite immutable value. The value is referenced by some kind of thread safe "box". We inject the box everywhere we need some piece of the configuration. The various config elements are accessed by dereferencing this value (i.e. popping it out of the "box") and than browsing through it's content. When a config swap comes the content of the box is swapped in one atomic step. In this way we get "Atomic update" and "Dynamic update".
+The idea is to use some of Clojure's principles: the entire config is a single composite immutable value. The value is referenced by some kind of thread safe "box". We inject the box everywhere we need some piece of the configuration. The various config elements are accessed by dereferencing this value (i.e. popping it out of the "box") and than browsing through it's content. When a config swap comes the content of the box is swapped in one atomic step. In this way we get "Atomic update" and "Dynamic update". However we loose "Simplicity" because there is no way to enforce the pop-read convention.
 
 Evaluation:
  * `(-)` Fine configuration granularity
