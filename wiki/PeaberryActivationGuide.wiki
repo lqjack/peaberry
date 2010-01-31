@@ -9,6 +9,8 @@ Currently Peaberry Activation works only under OSGi.
 
 Just install and start the Peaberry Activation bundle in your OSGi framework. The bundle follows the [http://www.osgi.org/blog/2007/02/osgi-extender-model.html extender] model and will pick up your Peaberry bundles and process them on sight.
 
+If you plan to use the [#Dynamic_Configuration Dynamic Configuration] feature you must also install an implementation of the OSGi ConfigurationAdmin service.
+
 = Overview =
 
 Under OSGi the Peaberry bootstrap code is contained in a `BundleActivator`. This bundle activator is coded in a repeatable pattern:
@@ -70,13 +72,13 @@ Bundle-Activator: com.acme.Activator
 ...
 }}}
 
-The OSGi framework requires that the activator class has a default constructor. It instantiates the activator and calls the `start()/stop()` methods to activate and deactivate the bundle. Peaberry Activation captures this pattern and implements it for you. All you need to do is to supply the Guice definitions of your singletons and exports as a regular Guice `Module`.
+The OSGi framework requires that the activator class has a default constructor. It instantiates the activator and calls the `start()/stop()` methods to activate and deactivate the bundle. Peaberry Activation captures this pattern and implements it for you. All you need to do is to supply the Guice definitions of your singletons, exports and dynamic configuration values as a regular Guice `Module`.
 
 = Usage =
 
-== Configuration ==
+== Bootstrap Configuration ==
 
-Peaberry Activation replaces the default OSGi bootstrap hook with a Guice bootstrap module. Rather than implement a `BundleActivator` you need to implement a single `Module` and declare it inside the bundle manifest like this:
+Peaberry Activation replaces the default OSGi bootstrap hook with a Guice bootstrap module. Rather than implement a `BundleActivator` you need to implement a _single_ `Module` and declare it inside the bundle manifest like this:
 
 {{{
 ...
@@ -84,7 +86,7 @@ Bundle-Module: com.acme.Config
 ...
 }}}
 
-As with the activator the bootstrap module has to have a default constructor. 
+As with the activator the bootstrap module has to have a _default constructor_. 
 
 {{{
 public class Config extends AbstractModule {
@@ -96,7 +98,7 @@ public class Config extends AbstractModule {
 }
 }}}
 
-When more than one Guice modules are needed they can be installed from the bootstrap module like this:
+When you need many Guice modules you can install them from the single bootstrap module like this:
 
 {{{
 public class Config extends AbstractModule {
@@ -108,11 +110,11 @@ public class Config extends AbstractModule {
 }
 }}}
 
-The Peaberry Activation extender will instantiate the bootstrap module and pass it to a Guice `Injetor`. It will than use the Guice introspection SPI to discover all `Export<T>` bindings and all `Singleton` scoped bindings. These form the _bundle roots_. The roots are instantiated and started upon activation and stopped and dropped upon deactivation. I.e. we follow the standard startup and shutdown sequences outlined in the `BundleActivator` template shown above. Currently there are two minor restrictions we must follow:
+The Peaberry Activation extender will instantiate the bootstrap module and pass it to a Guice `Injector`. It will than use the Guice introspection SPI to discover all `Export<T>` bindings, all `Singleton` scoped bindings, and all bindings to a dynamic configuration `Provider`. These three sets form the _bundle roots_. The roots are instantiated and started upon activation and stopped and dropped upon deactivation. I.e. we follow the standard startup and shutdown sequences outlined in the `BundleActivator` template shown above. Currently there are two minor restrictions we must follow:
 
   * We can't relay on just-in-time bindings for the bundle roots. Every root needs to be explicitly declared in some module.
 
-  * We can't relay on direct Peaberry exports. Every singleton that needs to be exposed as a service must have a companion `Export<T>` binding as shown in the example above.
+  * We can't relay on _direct_ Peaberry exports. Every singleton that needs to be exposed as a service must have a companion `Export<T>` binding as shown in the example above.
 
 == Lifecycle for the Singletons ==
 
@@ -139,11 +141,11 @@ public HelloImpl implements Hello {
 
 The `@Start` and `@Stop` annotations are located in the `org.ops4j.peaberry.activation` package. Notice that if a method is annotated but has parameters it will be ignored. In a future version an error will be emitted for such methods.
 
-We can annotate as many methods as we like. All `@Start` methods will be called in the order in which they are defined in the bundle class. Same goes for the `@Stop` methods. 
+We can annotate as many methods as we like. All `@Start` methods will be called in the order in which they are defined in the bundle class. The same goes for the `@Stop` methods. 
 
 == ConfigurationAdmin Support ==
 
-PeaberryActivation can track dynamic configurations supplied by the OSGi `ConfigurationAdmin` service and inject their elements to `@Named` injection points. 
+PeaberryActivation can track dynamic configurations supplied by the OSGi `[http://www.osgi.org/javadoc/r4v42/org/osgi/service/cm/ConfigurationAdmin.html ConfigurationAdmin]` service and inject their elements to `@Named` injection points. 
 
 The API to do this is similar to the API used to setup dynamic service proxies. The `org.ops4j.peaberry.activation.Configurables` facade must be used to create a `Provider` for each dynamic value:
 
@@ -153,40 +155,133 @@ public class Config extends AbstractModule {
   protected void configure() {
     ...
     bind(Integer.class).annotatedWith(named("test")).toProvider(
-      Configurables.configurable(Integer.class).from("test.pid").named("config.value"));
+      Configurables.configurable(Integer.class).from("test.pid").named("test.key"));
   }
 }
 }}}
 
-Here we map an `Integer` named "test" to the dynamic value named "config.value" from the configuration with PID "test.pid". 
+Here we map an `Integer` named `test` to the dynamic value named `test.key` from the configuration with PID `test.pid`. It is expected that the object supplied from the ConfiguratinAdmin service will be of the same type as the type of the binding. In this case PeaberryActivation expects that under `test.key` it will discover an object of type `Integer`. PeaberryActivation does not yet support automatic conversions. Also notice that you can not use the `Binder.bindConstant()` method for dynamic values because it does not allow the use of `Providers`.
 
-== Operation ==
+== Shorthand Peaberry Syntax ==
 
-The PeaberryActivation extender processes bundles only when they enter the `ACTIVE` state. The lifecycle of a user bundle is as follows:
+The Peaberry philosophy to extending Guice is to implement different kinds of `Provider`. This design gives maximum flexibility and allows us to combine Peaberry with any other Guice extension in a nice orthogonal way. However this design also leads to lots of repetition in the Guice configuration code:
 
-* Preporation
-This is performed as the
-The bootstrap modules of such bundles are introspected and if required the appropriate `ManagedServices` are registered through the `BundleContext` of the user bundle. After this initial step the bundle is ready to be activated and deactivated as required. When a bundle is stopped a final deactivation will be performed just before it drops back to the `RESOLVED` state.
+{{{
+class Config extends AbstractModule {
+  @Override
+  protected void configure() {
+    /* Import */
+    bind(Service.class).toProvider(service(Service.class).single());
 
-Peaberry Activation will register on behalf of the user bundle a `ManagedService` for every PID mentioned in a `configurable()` statement.
+    /* Import Multiple */
+    bind(iterable(Service.class)).toProvider(service(Service.class).multiple());
 
-* The user bundle will not be activated until all tracked configurations are available. Also if a configuration disappears the bundle will be deactivated.
+    /* Export */
+    bind(export(ServiceImpl.class)).toProvider(service(ServiceImpl.class).export());
 
-* Every time a tracked configuration changes the user bundle will be deactivated, the relevant configuration values will be reloaded and the bundle will be re-activated against the new configuration values. This means the entire bundle structure and all runtime state will be scrapped and a new structure (singletons and exports) will be instantiated and injected with the new configuration. In this way we can inject the dynamic configuration values as if they were the traditional set of static constants. I.e. we program in the normal Guice style without any special constructs and additional thread safety issues.
+    /* Configure */
+    bind(Integer.class).annotatedWith(named("test")).toProvider(
+      configurable(Integer.class).from("test.pid").named("test.key"));
+  }
+}
+}}}
 
-= Order and Correctness =
+To ease the burden PeaberryActivation provides a set of simple wrappers of the regular Guice `Binder` and `AbstractModule` that allow us to re-write the definitions above like this:
 
+{{{
+class Config extends PeaberryActivationModule {
+  @Override
+  protected void configure() {
+    /* Import */
+    bindService(Service.class).single();
+
+    /* Import Multiple */
+    bindService(Service.class).multiple();
+
+    /* Export */
+    bindService(ServiceImpl.class).export();
+
+    /* Configure */
+    bindConfigurable(Integer.class).annotatedWith(named("test")).from("test.pid").named("test.key");
+  }
+}
+}}}
+
+Notice that rather than `AbstractModule` now we extend `PeaberryActivationModule`. These definitions are exactly equivalent to the long versions above:
+
+  * The first definition will bind a dynamic proxy of type `Service` to a single-style service import. 
+  * The second will bind a dynamic proxy of type `Iterable<Service>` to a multiple-style service import. 
+  * The third will bind an `Integer` annotated with `@Named("test")` to a dynamic value found in configuration `test.pid` under key `test.key`.
+  * The fourth line shows There is also a shorter version 
+
+For configurables there is also a default syntax that will bind the value under the same name as the corresponding key found in the dynamic configuration:
+{{{
+bindConfigurable(Integer.class).from("test.pid").named("test.key");
+}}}
+
+This will bind an `Integer` under the name `@Named("test.key")` found in configuration with PID `test.pid` under key `test.key`.
+
+The initial method of each short-hand definition returns a DSL builder that implements some of the `Provider`-building interfaces found in `org.ops4j.peaberry.Peaberry` or `org.ops4j.peaberry.activation.Configurables`. The difference is that instead of returning the built `Provider` instance from the final method call this builder will directly bind that instance into Guice and return `null`.
+
+You can freely mix the long and short forms in the same `configure()` method since `PeaberryActivationModule extends AbstractModule`.
+
+The shorthand Peaberry DSL can be found in the `org.ops4j.peaberry.activation.util` package.
+
+= Operation =
+
+The PeaberryActivation extender takes each bundle it processes through the following phases.
+
+== Preparation ==
+
+=== When it is performed ===
+
+  * The PeaberryActivation extender detects a bundle entering the `ACTIVE`.
+
+=== Sequence ===
+
+  # Try to read the `Bundle-Module` manifest header. If the header is not found no further processing will be done.  
+  # The bundle bootstrap module is instantiated and introspected. 
+  # All needed OSGi configurations are identified and a single `ManagedService` is registered to track each one. These services are registered on behalf of the user bundle via it's `BundleContext`.
+  # If all tracked configurations are available the bundle is [#Activation activated]. Otherwise the bundle sits in `stealth  mode` waiting for the required configurations to appear.
 
 == Activation ==
 
- * Upon startup first all singletons are created. 
- * Than they are activated in no particular order - or rather the order in, which their bindings are returned by the Guice introspection SPI is followed. 
- * Finally the exports are created, and with this their respective singletons are published in the OSGi service registry. 
+=== When ===
+
+ * All tracked configurations become available.
+ * During [#Reactivation Reactivation].
+
+=== Sequence ===
+
+ # The dynamic configuration values are loaded and bound.
+ # The singletons are created. 
+ # The singletons are activated. E.g. the `@Start` methods of each singleton are called in the order in which they are declared. You can not count on the order in, which the singletons are activated. The order followed is the same as order in, which the singleton bindings are returned by the Guice introspection SPI. 
+ # The exports are created, and with this their respective singletons are published in the OSGi service registry. 
 
 This sequence guarantees that your bundle's internals will be fully set up before they are exposed to control flow either from OSGi clients or from your own `@Start` methods.
 
 == Deactivation ==
 
- * First the exports are brought down. Notice that this is a merely a gesture of courtesy - after this step threads can still be trapped traversing your bundle. What this step guarantees is that no new threads will enter. 
- * Than the singletons are deactivated - again you should now count on the order of deactivation. The `@Stop` methods in your singletons should be thread-safe and properly crash any threads that might be trapped inside at the time of shutdown. The shutdown step should transform the internals of your bundle into a fail-fast ball of objects that will reject any callers with no other side effects. 
- * Finally all singletons and exports are detached (i.e. left to the garbage collector). After the final trapped threads crash the internals of your bundle will be claimed by the GC.
+=== When ===
+
+  * During bundle shutdown. E.g. when PeaberryActivation detects the bundle has enterd the `STOPPING` state.
+  * During [#Reactivation Reactivation].
+  * When the PeaberryActivation extender is stopped. Without the extender a bundle relying on PeaberryActivation can not function properly so it is best to shut it down.
+
+=== Sequence ===
+ # The exports are brought down. Notice that this is a merely a gesture of courtesy - after this step threads can still be trapped, while traversing your bundle. What this step guarantees is that no new threads will enter. 
+ # The singletons are deactivated. Again you should now count on the order of deactivation. The `@Stop` methods in your singletons should be thread-safe and properly crash any threads that might be trapped inside the singleton object at the time of shutdown. The shutdown step should transform the internals of your bundle into a fail-fast ball of objects that will reject any callers with no other side effects. 
+ # The singletons and exports are detached (i.e. left to the garbage collector). After the final trapped threads leave this ball the internals of your bundle will should become unreachable and be claimed by the GC. I.e. watch out for static references.
+
+== Reactivation ==
+
+=== When ===
+
+ * A tracked OSGi configuration changes.
+
+=== Sequence ===
+
+ # Deactivate. Execute the [#Deactivation deactivation] procedure.
+ # Activate. Execute the [#Activation activation] procedure.
+
+This sequence is roughly equivalent to a _bundle restart_ - we only skip the Preporation phase. This means the entire bundle structure and all runtime state will be scrapped and a new singletons and exports will be instantiated and injected with the new dynamic configuration. In this way we can inject the dynamic configuration values as if they were the traditional set of _static constants_. I.e. we work with normal `@Named` injection points, and program without any special constructs and additional thread safety issues.
