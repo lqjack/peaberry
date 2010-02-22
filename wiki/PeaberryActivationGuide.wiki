@@ -145,7 +145,7 @@ We can annotate as many methods as we like. All `@Start` methods will be called 
 
 == ConfigurationAdmin Support ==
 
-PeaberryActivation can track dynamic configurations supplied by the OSGi `[http://www.osgi.org/javadoc/r4v42/org/osgi/service/cm/ConfigurationAdmin.html ConfigurationAdmin]` service and inject their elements to `@Named` injection points. 
+PeaberryActivation can track dynamic configurations supplied by the OSGi [http://www.osgi.org/javadoc/r4v42/org/osgi/service/cm/ConfigurationAdmin.html ConfigurationAdmin] service and inject their elements to `@Named` injection points. 
 
 The API to do this is similar to the API used to setup dynamic service proxies. The `org.ops4j.peaberry.activation.Configurables` facade must be used to create a `Provider` for each dynamic value:
 
