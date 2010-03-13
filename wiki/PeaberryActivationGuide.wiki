@@ -234,7 +234,7 @@ The PeaberryActivation extender takes each bundle it processes through the follo
 
 == Preparation ==
 
-=== When it is performed ===
+=== When ===
 
   * The PeaberryActivation extender detects a bundle entering the `ACTIVE`.
 
