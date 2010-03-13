@@ -265,7 +265,7 @@ This sequence guarantees that your bundle's internals will be fully set up befor
 
 === When ===
 
-  * During bundle shutdown. E.g. when PeaberryActivation detects the bundle has enterd the `STOPPING` state.
+  * During bundle shutdown. E.g. when PeaberryActivation detects the bundle has entered the `STOPPING` state.
   * During [#Reactivation Reactivation].
   * When the PeaberryActivation extender is stopped. Without the extender a bundle relying on PeaberryActivation can not function properly so it is best to shut it down.
 
