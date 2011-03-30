@@ -212,8 +212,8 @@ Notice that rather than `AbstractModule` now we extend `PeaberryActivationModule
 
   * The first definition will bind a dynamic proxy of type `Service` to a single-style service import. 
   * The second will bind a dynamic proxy of type `Iterable<Service>` to a multiple-style service import. 
-  * The third will bind an `Integer` annotated with `@Named("test")` to a dynamic value found in configuration `test.pid` under key `test.key`.
-  * The fourth line shows There is also a shorter version 
+  * The third line exports `ServiceImpl` under all interfaces it implements. (I.e. creates an Exprot<ServiceImpl> object behind the scenes).
+  * The fourth will bind an `Integer` annotated with `@Named("test")` to a dynamic value found in configuration `test.pid` under key `test.key`.
 
 For configurables there is also a default syntax that will bind the value under the same name as the corresponding key found in the dynamic configuration:
 {{{
@@ -285,4 +285,4 @@ This sequence guarantees that your bundle's internals will be fully set up befor
  # Deactivate. Execute the [#Deactivation deactivation] procedure.
  # Activate. Execute the [#Activation activation] procedure.
 
-This sequence is roughly equivalent to a _bundle restart_ - we only skip the Preporation phase. This means the entire bundle structure and all runtime state will be scrapped and a new singletons and exports will be instantiated and injected with the new dynamic configuration. In this way we can inject the dynamic configuration values as if they were the traditional set of _static constants_. I.e. we work with normal `@Named` injection points, and program without any special constructs and additional thread safety issues.
+This sequence is roughly equivalent to a _bundle restart_ - we only skip the Preparation phase. This means the entire bundle structure and all runtime state will be scrapped and a new singletons and exports will be instantiated and injected with the new dynamic configuration. In this way we can inject the dynamic configuration values as if they were the traditional set of _static constants_. I.e. we work with normal `@Named` injection points, and program without any special constructs and additional thread safety issues.
