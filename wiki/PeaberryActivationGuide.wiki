@@ -212,7 +212,7 @@ Notice that rather than `AbstractModule` now we extend `PeaberryActivationModule
 
   * The first definition will bind a dynamic proxy of type `Service` to a single-style service import. 
   * The second will bind a dynamic proxy of type `Iterable<Service>` to a multiple-style service import. 
-  * The third line exports `ServiceImpl` under all interfaces it implements. (I.e. creates an Exprot<ServiceImpl> object behind the scenes).
+  * The third line exports `ServiceImpl` under all interfaces it implements. (I.e. creates an {{{Exprot<ServiceImpl>}}} object behind the scenes).
   * The fourth will bind an `Integer` annotated with `@Named("test")` to a dynamic value found in configuration `test.pid` under key `test.key`.
 
 For configurables there is also a default syntax that will bind the value under the same name as the corresponding key found in the dynamic configuration:
