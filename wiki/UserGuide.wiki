@@ -136,4 +136,4 @@ And you can now actively watch for changes in the services you inject:
  }).multiple());
 }}}
 
-!AbstractWatcher is a utility class to make implementing !ServiceWatcher a bit easier.
+!AbstractWatcher is a utility class to make implementing !ServiceWatcher a bit easier. Note that you'll only receive events for services when the watched binding is actually used in your bundle, such as by injecting an Iterable<StockQuote>.
