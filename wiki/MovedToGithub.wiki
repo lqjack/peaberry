@@ -1,0 +1,7 @@
+#summary Moved to https://github.com/ops4j/peaberry
+
+= NOTICE: This project has moved to [https://github.com/ops4j/peaberry] =
+
+Wiki: https://github.com/ops4j/peaberry/wiki/_pages
+
+Issues: https://github.com/ops4j/peaberry/issues
